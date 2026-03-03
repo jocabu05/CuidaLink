@@ -1,8 +1,21 @@
+/**
+ * DashboardScreen.tsx — Panel principal de la CUIDADORA (pantalla de inicio).
+ *
+ * Muestra:
+ * - Header con gradiente: saludo, nombre paciente, fecha, modo oscuro
+ * - Barra de progreso circular con % de tareas completadas
+ * - Grid de tareas del día (Llegada, Pastilla, Paseo, Comida, Siesta, Valorar)
+ *   Cada tarea es un TaskCard con emoji, estado completada/pendiente y acción
+ * - Widget wearable: pasos, frecuencia cardíaca, sueño
+ * - Acceso rápido a: Chat, Perfil paciente, Calendario
+ * - Botón de asistente de voz (TTS: lee tareas pendientes)
+ *
+ * Integra: eventosService, voiceService, wearableService, localEventStorage,
+ *          notasService, tareasService, fallDetectionService
+ *
+ * ~960 líneas | Soporta pull-to-refresh, modo oscuro, animaciones
+ */
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     RefreshControl,
     Alert,

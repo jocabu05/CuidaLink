@@ -1,3 +1,18 @@
+/**
+ * App.tsx — Componente raíz de la aplicación CuidaLink.
+ *
+ * Responsabilidades:
+ * - Configurar la navegación con React Navigation (Stack Navigator)
+ * - Gestionar autenticación: comprueba token en AsyncStorage al iniciar
+ * - Rutas de la app:
+ *   · Splash → RoleSelection → Login/FamiliarLogin → Dashboard/FamiliarDashboard
+ *   · Desde Dashboard: Checkin, Pastilla, Comida, Paseo, Siesta, Valorar, Chat, Calendar, Perfil
+ *   · Desde FamiliarDashboard: Chat, Calendar, Notas, Historial, Informe, Localizar, Mapa, Medicacion
+ * - Proveer ThemeProvider (modo claro/oscuro) a toda la app
+ * - Configurar StatusBar según el tema
+ *
+ * ~441 líneas
+ */
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, StyleSheet, Platform } from 'react-native';

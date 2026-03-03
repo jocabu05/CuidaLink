@@ -4,6 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad JPA que representa un mensaje del chat entre cuidadora y familiar.
+ * Soporta 3 tipos de contenido:
+ *   - "text": mensaje de texto normal (campo text)
+ *   - "audio": nota de voz en Base64 (campo audioBase64 + audioDuration)
+ *   - "image": foto en Base64 (campo imageBase64)
+ * 
+ * Campos:
+ * - abueloId: paciente al que está asociado el chat
+ * - from: remitente ("cuidadora" o "familiar")
+ * - leido: si el destinatario ya leyó el mensaje
+ */
 @Entity
 @Table(name = "mensajes_chat")
 @Data

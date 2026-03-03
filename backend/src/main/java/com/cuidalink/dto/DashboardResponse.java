@@ -8,6 +8,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO de respuesta del dashboard diario. Agrupa toda la información
+ * que necesita la pantalla principal de la cuidadora:
+ * - AbueloInfo: datos básicos del paciente
+ * - EventoInfo: eventos registrados hoy con detalles
+ * - TareaInfo: tareas del día con estado completada/pendiente
+ * - EstadisticasDia: porcentaje de avance y contadores
+ */
 @Data
 @AllArgsConstructor
 @Builder

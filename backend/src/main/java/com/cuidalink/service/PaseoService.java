@@ -20,6 +20,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Servicio de gestión de paseos con tracking GPS.
+ * 
+ * iniciarPaseo(): Crea un paseo activo (solo 1 por cuidadora a la vez).
+ * finalizarPaseo(): Cierra el paseo activo, guarda ruta GeoJSON,
+ *   distancia y crea un evento PASEO para el historial.
+ * 
+ * La ruta se convierte a formato GeoJSON (estándar geográfico)
+ * para poder visualizarla en mapas como Mapbox o Google Maps.
+ */
 @Service
 @RequiredArgsConstructor
 public class PaseoService {

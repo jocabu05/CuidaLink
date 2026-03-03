@@ -1,7 +1,13 @@
+/**
+ * ValorarScreen.tsx — Pantalla de valoración diaria.
+ *
+ * La cuidadora o familiar puntua el día con estrellas (1-5) y un comentario.
+ * Se usa para generar estadísticas en los informes semanales.
+ *
+ * UI: Estrellas interactivas, campo de comentario, botón enviar.
+ * Integra: ratingLocalService
+ */
 import React, { useState, useEffect } from 'react';
-import {
-    View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView,
-} from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
 import ratingLocalService, { DayRating } from '../services/ratingLocalService';

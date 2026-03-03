@@ -1,3 +1,18 @@
+/**
+ * weeklyReportService.ts — Servicio de informes semanales.
+ *
+ * Genera un informe PDF con estadísticas de los últimos 7 días:
+ * - Tabla de completitud: % de cada tipo de tarea cumplida
+ * - Promedio de valoraciones diarias
+ * - Incidencias (caídas, alertas)
+ *
+ * Métodos:
+ * - generarInforme(): genera HTML → PDF con expo-print y lo comparte con expo-sharing
+ * - programarNotificacionSemanal(): notificación cada domingo para generar informe
+ * - getUltimoInforme(): recupera el último informe generado
+ *
+ * Usa: expo-print (HTML→PDF), expo-sharing (compartir), localEventStorage + ratingLocalService
+ */
 import * as Notifications from 'expo-notifications';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';

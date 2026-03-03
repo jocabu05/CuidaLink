@@ -1,8 +1,19 @@
+/**
+ * FamiliarDashboardScreen.tsx — Panel principal del FAMILIAR (pantalla de inicio).
+ *
+ * Muestra:
+ * - Header con gradiente: saludo, nombre familiar, parentesco, hora
+ * - Resumen del día: eventos completados hoy con fotos de verificación
+ * - Última ubicación del paciente con estado zona segura/peligro
+ * - Acciones rápidas: Chat, Notas, Calendario, Localizar, Medicación
+ * - Historial de eventos, Informes semanales, Mapa de zona
+ * - Badge de notas pendientes
+ *
+ * Integra: eventosService, notasService, locationService
+ * 
+ * ~950 líneas | Soporta pull-to-refresh, modo oscuro, animaciones
+ */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     RefreshControl,
     Image,

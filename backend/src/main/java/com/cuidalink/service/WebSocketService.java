@@ -10,6 +10,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Servicio de notificaciones en tiempo real vía WebSocket/STOMP.
+ * 
+ * Canales:
+ * - /topic/familia/{id}: notificaciones para un familiar específico
+ * - /topic/emergencias: canal global para alertas críticas
+ * 
+ * Métodos:
+ * - notificarEvento(): Envía notificación normal (llegada, pastilla, comida...)
+ *   Incluye: tipo, hora, descripción, estado verificado, GPS, foto
+ * 
+ * - notificarEmergencia(): Envía alerta URGENTE (caída, fuga)
+ *   Se envía al canal del familiar Y al canal global de emergencias
+ * 
+ * - notificarMensaje(): Envía notificación de nuevo mensaje de chat
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

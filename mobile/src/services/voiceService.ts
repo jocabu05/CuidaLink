@@ -1,3 +1,21 @@
+/**
+ * voiceService.ts — Servicio de voz completo (Text-to-Speech + grabación de audio).
+ *
+ * Text-to-Speech (TTS):
+ * - leerTareasPendientes(): lee en voz alta las tareas que faltan
+ * - saludar(): saludo personalizado con nombre del paciente
+ * - leerResumenDia(): resumen de tareas completadas/pendientes
+ * - speak(): habla cualquier texto en español
+ * - stop(): detiene el habla
+ *
+ * Grabación de audio (notas de voz para chat):
+ * - startRecording(): inicia grabación con Audio API de Expo
+ * - stopRecording(): detiene grabación, devuelve base64 + duración
+ * - playAudio(): reproduce audio desde base64 o URI
+ * - stopPlayback(): detiene la reproducción
+ *
+ * Usa expo-speech para TTS y expo-av para grabación/reproducción.
+ */
 import * as Speech from 'expo-speech';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Platform, Alert } from 'react-native';

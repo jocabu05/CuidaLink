@@ -19,6 +19,22 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Configuración de seguridad de Spring Security.
+ * 
+ * Políticas:
+ * - CSRF desactivado (API REST stateless, no usa cookies de sesión)
+ * - CORS configurado para permitir peticiones desde:
+ *     · localhost:3000 (web React)
+ *     · localhost:5173 (web Vite)
+ *     · localhost:19006 (Expo web)
+ *     · localhost:8081 (Expo dev)
+ * - Sesiones STATELESS (cada petición se autentica con JWT)
+ * - Endpoints públicos: /api/auth/**, /api/public/**, /h2-console/**, /ws/**
+ * - Todo lo demás requiere token JWT válido
+ * - BCrypt como encoder de contraseñas/PINs
+ * - El filtro JWT se ejecuta ANTES del filtro estándar de Spring Security
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

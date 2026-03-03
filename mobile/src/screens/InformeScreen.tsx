@@ -1,8 +1,16 @@
+/**
+ * InformeScreen.tsx — Pantalla de informes semanales.
+ *
+ * Genera un informe visual y exportable con estadísticas de la semana:
+ * - Gráficos de completitud por tipo de tarea
+ * - Promedio de valoraciones diarias
+ * - Resumen de incidencias (caídas, alertas)
+ * - Botón para exportar PDF y compartir
+ *
+ * Integra: weeklyReportService, localEventStorage, ratingLocalService
+ * ~874 líneas
+ */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     Alert,

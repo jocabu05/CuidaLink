@@ -11,6 +11,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 
+/**
+ * Inicializador de datos de prueba que se ejecuta al arrancar la aplicación.
+ * 
+ * Solo inserta datos si la base de datos está vacía (cuidadoraRepository.count() == 0).
+ * 
+ * Crea:
+ * - 3 cuidadoras de demo (PINs hasheados con BCrypt: 1234, 5678, 9999)
+ * - 3 pacientes en Valencia con coordenadas GPS reales
+ * - 3 familiares con contraseñas hasheadas (todas: "familia123")
+ * 
+ * Los datos permiten probar la app completa sin configuración manual:
+ *   · Login cuidadora: teléfono 645123456, PIN 1234
+ *   · Login familiar: laura@cuidalink.com, contraseña familia123
+ */
 @Configuration
 @RequiredArgsConstructor
 @Slf4j

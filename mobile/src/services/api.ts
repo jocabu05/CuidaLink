@@ -1,3 +1,15 @@
+/**
+ * api.ts — Cliente HTTP central (Axios) para comunicación con el backend.
+ *
+ * Configura:
+ * - URL base del backend (auto-detecta desde env vars o usa IP por defecto)
+ * - Interceptor de REQUEST: inyecta token JWT en Authorization header
+ * - Interceptor de RESPONSE: detecta 401 (no autorizado) y limpia sesión
+ * - Timeout de 3 segundos
+ *
+ * Exporta: instancia axios configurada + interfaces TypeScript para los DTOs
+ * (LoginResponse, DashboardResponse, EventoInfo, UbicacionAbuelo, PerfilAbuelo)
+ */
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';

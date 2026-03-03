@@ -1,3 +1,15 @@
+/**
+ * CheckinScreen.tsx — Pantalla de check-in (llegada al domicilio).
+ *
+ * Flujo:
+ * 1. Abre la cámara frontal para selfie de verificación
+ * 2. Captura foto en Base64
+ * 3. Obtiene coordenadas GPS actuales
+ * 4. Envía al backend → verifica geofence (200m del domicilio)
+ * 5. Muestra resultado: ✓ Verificada / ⚠️ Fuera de zona
+ *
+ * Usa expo-camera para la cámara y locationService para GPS.
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';

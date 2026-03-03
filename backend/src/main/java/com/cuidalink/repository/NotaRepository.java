@@ -7,6 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+/**
+ * Repositorio JPA para la entidad Nota.
+ * 
+ * Métodos:
+ * - findByAbueloIdAndLeidaFalseOrderByTimestampDesc(): notas no leídas (pendientes)
+ * - findByAbueloIdOrderByTimestampDesc(): todas las notas, más recientes primero
+ * - findByAbueloIdAndAutorOrderByTimestampDesc(): filtrar por autor (cuidadora/familiar)
+ */
 @Repository
 public interface NotaRepository extends JpaRepository<Nota, Long> {
 

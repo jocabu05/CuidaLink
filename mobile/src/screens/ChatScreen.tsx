@@ -1,8 +1,19 @@
+/**
+ * ChatScreen.tsx — Chat en tiempo real entre cuidadora y familiar.
+ *
+ * Funcionalidades:
+ * - Mensajes de texto con burbujas estilo WhatsApp
+ * - Notas de voz: grabar, reproducir con barra de progreso
+ * - Envío de fotos desde cámara o galería
+ * - Indicador de escritura (typing)
+ * - Scroll automático a último mensaje
+ * - Eliminar mensajes (long press)
+ * - Modo oscuro completo
+ *
+ * Integra: chatService (backend), voiceService (grabación/reproducción)
+ * ~996 líneas
+ */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     TextInput,
     TouchableOpacity,
     FlatList,

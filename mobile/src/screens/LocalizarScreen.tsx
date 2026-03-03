@@ -1,8 +1,17 @@
+/**
+ * LocalizarScreen.tsx — Pantalla de localización GPS del paciente.
+ *
+ * Muestra:
+ * - Mapa con la última ubicación conocida del paciente
+ * - Zona segura (círculo de 200m alrededor del domicilio)
+ * - Estado: dentro/fuera de zona segura
+ * - Distancia actual al domicilio en metros
+ * - Botón de actualizar ubicación
+ *
+ * Integra: eventosService (getUbicacion), react-native-maps
+ * ~320 líneas
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ActivityIndicator,
     TouchableOpacity,
     Animated,

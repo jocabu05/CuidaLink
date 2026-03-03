@@ -10,6 +10,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controlador REST de valoraciones.
+ * Base path: /api/rating (requiere JWT)
+ * 
+ * Los familiares valoran a las cuidadoras con estrellas (1-5) y comentarios.
+ * 
+ * Endpoints:
+ *   GET  /api/rating/{cuidadoraId} → Perfil de valoraciones: promedio, total, últimos 10
+ *   POST /api/rating               → Crear nueva valoración (actualiza promedio automáticamente)
+ */
 @RestController
 @RequestMapping("/api/rating")
 @RequiredArgsConstructor

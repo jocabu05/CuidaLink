@@ -6,6 +6,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO de respuesta de login exitoso para cuidadoras.
+ * Contiene el token JWT y los datos básicos del perfil.
+ */
 @Data
 @AllArgsConstructor
 @Builder

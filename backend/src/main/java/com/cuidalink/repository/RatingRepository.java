@@ -8,6 +8,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repositorio JPA para la entidad Rating.
+ * Incluye queries agregadas para calcular estadísticas.
+ * 
+ * Métodos:
+ * - findByCuidadoraIdOrderByFechaDesc(): últimas valoraciones de una cuidadora
+ * - calcularPromedioRating(): AVG(estrellas) para recalcular el promedio
+ * - countByCuidadoraId(): total de valoraciones recibidas
+ */
 @Repository
 public interface RatingRepository extends JpaRepository<Rating, Long> {
     

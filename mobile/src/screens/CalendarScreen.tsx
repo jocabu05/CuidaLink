@@ -1,8 +1,18 @@
+/**
+ * CalendarScreen.tsx — Calendario compartido de citas y eventos.
+ *
+ * Funcionalidades:
+ * - Vista mensual con días marcados que tienen citas
+ * - Lista de citas del día seleccionado con iconos por tipo
+ * - Crear/editar/eliminar citas (modal con formulario)
+ * - Tipos de cita: Médica, Medicamento, Actividad, Visita, Otro
+ * - Recordatorios automáticos vía notificaciones locales
+ * - Ambos roles (cuidadora/familiar) pueden gestionar citas
+ *
+ * Integra: calendarReminderService, backend /api/citas
+ * ~1115 líneas
+ */
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     Alert,

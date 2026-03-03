@@ -1,3 +1,17 @@
+/**
+ * theme.ts — Tokens de diseño del sistema CuidaLink.
+ *
+ * Exporta constantes globales de estilo:
+ * - BRAND: paleta de colores corporativos (azul primario, acentos, semánticos)
+ * - TYPOGRAPHY: tamaños y pesos de fuente
+ * - SPACING: sistema de espaciado consistente (xs, sm, md, lg, xl)
+ * - SHADOWS: sombras para cards y elevaciones
+ * - BORDER_RADIUS: radios de borde estándar
+ *
+ * Se importa en TODOS los componentes y pantallas para mantener
+ * consistencia visual en toda la app.
+ */
+
 // CuidaLink Theme - Colores y tipografía del sistema
 
 // ─── PALETA UNIFICADA AZUL + BLANCO ───

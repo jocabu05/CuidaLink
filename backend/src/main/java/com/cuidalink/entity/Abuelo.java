@@ -5,6 +5,20 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entidad JPA que representa a un paciente con Alzheimer ("abuelo").
+ * 
+ * Campos principales:
+ * - nombre, direccion: datos personales del paciente
+ * - lat, lng: coordenadas GPS del domicilio (para geofencing en check-in)
+ * - familiarId: FK al familiar que supervisa a este paciente
+ * - telefonoEmergencia: número para alertas urgentes
+ * - fotoPerfil: imagen en Base64 (LONGTEXT)
+ * - notasMedicas: información médica relevante (medicación, alergias...)
+ * - eventos: relación 1:N con todos los eventos registrados para este paciente
+ * 
+ * @PrePersist: asigna createdAt automáticamente al crear el registro
+ */
 @Entity
 @Table(name = "abuelos")
 @Data

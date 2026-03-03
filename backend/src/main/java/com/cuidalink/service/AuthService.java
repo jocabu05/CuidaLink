@@ -9,6 +9,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio de autenticación para cuidadoras.
+ * 
+ * login(): Recibe teléfono + PIN, verifica contra BCrypt,
+ *          y devuelve un JWT con los datos de la cuidadora.
+ * 
+ * Flujo de login:
+ * 1. Busca cuidadora por teléfono en BD
+ * 2. Compara PIN con hash BCrypt almacenado
+ * 3. Verifica que la cuenta esté activa
+ * 4. Genera token JWT con ID y teléfono
+ * 5. Devuelve LoginResponse con token, nombre, foto y rating
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {

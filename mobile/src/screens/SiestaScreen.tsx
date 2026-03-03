@@ -1,3 +1,13 @@
+/**
+ * SiestaScreen.tsx — Pantalla de registro de siesta/descanso.
+ *
+ * Flujo:
+ * 1. Botón grande para registrar inicio de siesta
+ * 2. Timer visual que muestra duración
+ * 3. Registra evento SIESTA con la duración total
+ *
+ * No requiere foto ni GPS, solo el registro temporal.
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useTheme } from '../context/ThemeContext';

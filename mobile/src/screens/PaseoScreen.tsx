@@ -1,8 +1,17 @@
+/**
+ * PaseoScreen.tsx — Pantalla de tracking GPS de paseos.
+ *
+ * Flujo:
+ * 1. Botón "Iniciar Paseo" → comienza tracking GPS continuo
+ * 2. Muestra mapa en tiempo real con la ruta dibujada
+ * 3. Contador de distancia (km) y duración (minutos)
+ * 4. Botón "Finalizar" → envía ruta GeoJSON al backend
+ *
+ * Integra: locationService (GPS), paseoService (backend)
+ * Usa MapView de react-native-maps para visualizar la ruta.
+ * ~509 líneas
+ */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     TouchableOpacity,
     Alert,
     ActivityIndicator,

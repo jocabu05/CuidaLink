@@ -1,7 +1,16 @@
+/**
+ * authService.ts — Servicio de autenticación para cuidadoras y familiares.
+ *
+ * Gestiona:
+ * - Login cuidadora (teléfono + PIN → JWT)
+ * - Login familiar (email + password → JWT con rol FAMILIAR)
+ * - Registro de familiar
+ * - Persistencia del token y datos de usuario en AsyncStorage
+ * - Logout (limpia token y datos locales)
+ * - getToken() / getUser() para acceder a la sesión actual
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { LoginResponse } from './api';
-
-export interface User {
     id: number;
     nombre: string;
     telefono: string;

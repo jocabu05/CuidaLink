@@ -1,8 +1,14 @@
+/**
+ * FamiliarLoginScreen.tsx — Pantalla de login para FAMILIARES.
+ *
+ * Autenticación: email + contraseña.
+ * Tras login exitoso, guarda JWT con rol FAMILIAR y navega a FamiliarDashboard.
+ * Incluye enlace para registrarse si no tiene cuenta.
+ *
+ * UI: Gradiente header, inputs modernos, animaciones de carga.
+ * Soporta modo oscuro.
+ */
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,

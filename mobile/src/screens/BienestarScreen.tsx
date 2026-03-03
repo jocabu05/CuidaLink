@@ -1,3 +1,17 @@
+/**
+ * BienestarScreen — Pantalla de bienestar del abuelo.
+ *
+ * Muestra un resumen visual del estado de bienestar del abuelo:
+ * - Puntuación semanal de ánimo (basada en valoraciones diarias).
+ * - Gráfica de actividad de los últimos 7 días (eventos completados).
+ * - Datos de wearable (pasos, frecuencia cardiaca, sueño).
+ * - Indicadores de adherencia a medicación, comida y paseos.
+ *
+ * Obtiene los datos de localEventStorage, ratingLocalService,
+ * wearableService y eventosService (API).
+ *
+ * @module screens/BienestarScreen
+ */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,

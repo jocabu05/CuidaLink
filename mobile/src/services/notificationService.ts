@@ -1,7 +1,18 @@
+/**
+ * notificationService.ts — Servicio de notificaciones push locales.
+ *
+ * Funcionalidades:
+ * - scheduleReminder(): programa notificación diaria a una hora fija
+ * - cancelReminder(): cancela una notificación programada
+ * - getScheduledReminders(): lista recordatorios activos
+ * - requestPermissions(): solicita permiso de notificaciones al usuario
+ *
+ * Configura el handler global de notificaciones de Expo
+ * (sonido, alerta, badge habilitados).
+ * Los recordatorios se persisten en AsyncStorage.
+ */
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const REMINDERS_KEY = '@cuidalink_reminders';
 
 // Configure notification handler
 Notifications.setNotificationHandler({

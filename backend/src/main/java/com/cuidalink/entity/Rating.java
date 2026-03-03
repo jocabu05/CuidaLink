@@ -4,6 +4,17 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad JPA que representa una valoración de un familiar hacia una cuidadora.
+ * 
+ * Campos:
+ * - cuidadora: la profesional valorada (FK ManyToOne)
+ * - abuelo: el paciente relacionado (FK ManyToOne)
+ * - familiarId: ID del familiar que hizo la valoración
+ * - estrellas: puntuación de 1 a 5
+ * - comentario: texto explicativo opcional
+ * - fecha: momento de la valoración (automático)
+ */
 @Entity
 @Table(name = "ratings")
 @Data

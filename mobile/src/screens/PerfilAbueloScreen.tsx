@@ -1,8 +1,17 @@
+/**
+ * PerfilAbueloScreen.tsx — Perfil completo del paciente.
+ *
+ * Muestra y permite editar:
+ * - Foto de perfil (cámara o galería)
+ * - Datos personales: nombre, dirección, teléfono emergencia
+ * - Notas médicas: medicación, alergias, instrucciones
+ * - Coordenadas GPS del domicilio
+ * - Información del familiar vinculado
+ *
+ * Integra: eventosService (getPerfilAbuelo), fotoService
+ * ~1196 líneas
+ */
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     Linking,

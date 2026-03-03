@@ -8,6 +8,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO de respuesta con el perfil de valoraciones de una cuidadora.
+ * Incluye: promedio, total, y los últimos 10 ratings con comentarios.
+ */
 @Data
 @AllArgsConstructor
 @Builder

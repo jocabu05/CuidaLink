@@ -1,6 +1,10 @@
+/**
+ * fotoService.ts — Servicio simple para persistir la foto de perfil del paciente.
+ *
+ * Usa AsyncStorage para guardar/recuperar la URI de la foto.
+ * Se usa en PerfilAbueloScreen y DashboardScreen.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const FOTO_PACIENTE_KEY = 'cuidalink_foto_paciente';
 
 const fotoService = {
     async guardarFoto(uri: string): Promise<void> {

@@ -1,8 +1,18 @@
+/**
+ * HistorialScreen.tsx — Historial completo de eventos del paciente.
+ *
+ * Funcionalidades:
+ * - Lista cronológica de todos los eventos registrados
+ * - Filtros por tipo (Llegada, Pastilla, Comida, Paseo, Siesta, Caída)
+ * - Búsqueda por texto en descripciones
+ * - Agrupación por día con separadores visuales
+ * - Indicador de verificado (geofence/OCR) en cada evento
+ * - Fotos expandibles al pulsar
+ *
+ * Integra: localEventStorage (offline-first)
+ * ~894 líneas
+ */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     RefreshControl,
     ActivityIndicator,

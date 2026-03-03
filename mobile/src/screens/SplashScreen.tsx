@@ -1,3 +1,11 @@
+/**
+ * SplashScreen.tsx — Pantalla de carga inicial con animación de logo.
+ *
+ * Se muestra durante 2 segundos al abrir la app.
+ * Animación: logo con fade-in + escalado + rotación.
+ * Tras completar, llama a onFinish() para navegar al login o dashboard.
+ * Soporta modo oscuro vía ThemeContext.
+ */
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { useTheme } from '../context/ThemeContext';

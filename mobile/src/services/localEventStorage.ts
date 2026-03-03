@@ -1,8 +1,17 @@
+/**
+ * localEventStorage.ts — Almacén local de eventos con sincronización offline-first.
+ *
+ * Funcionalidades:
+ * - Guarda eventos localmente en AsyncStorage cuando no hay conexión
+ * - Mantiene una cola de sincronización (sync queue) para enviar al servidor
+ * - sincronizar(): envía la cola pendiente al backend cuando vuelve la conexión
+ * - getEventos(): devuelve eventos locales del día
+ * - getResumenSemanal(): agrupa eventos de los últimos 7 días por tipo
+ *
+ * Patrón offline-first: la app funciona sin conexión y sincroniza después.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
-
-const EVENTS_KEY = '@cuidalink_events';
-const SYNC_QUEUE_KEY = '@cuidalink_sync_queue';
 
 export interface LocalEvento {
     id: string;

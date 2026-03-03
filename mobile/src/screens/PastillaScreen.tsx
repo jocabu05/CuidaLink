@@ -1,3 +1,15 @@
+/**
+ * PastillaScreen.tsx — Pantalla de verificación de medicamento.
+ *
+ * Flujo:
+ * 1. Abre cámara trasera para fotografiar la caja/pastilla
+ * 2. Captura foto en Base64
+ * 3. Simula verificación OCR (en producción: OCR real con Google Vision)
+ * 4. Envía al backend con datos de medicamento verificado
+ * 5. Muestra resultado: ✓ Verificado OCR / Sin verificar
+ *
+ * La verificación OCR confirma que la caja corresponde al medicamento correcto.
+ */
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Image } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';

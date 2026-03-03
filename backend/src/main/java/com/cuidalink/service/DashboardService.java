@@ -12,6 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que genera el dashboard diario de la cuidadora.
+ * 
+ * getDashboardHoy(): Para un paciente dado, devuelve:
+ *   - Datos del paciente (nombre, dirección, foto)
+ *   - Lista de eventos registrados hoy
+ *   - Lista de tareas pendientes del día (LLEGADA, PASTILLA, PASEO, COMIDA)
+ *   - Estadísticas: total tareas, completadas, % de avance
+ * 
+ * generarTareasDia(): Compara las tareas estándar (4 tipos)
+ *   con los eventos ya registrados para marcar cuáles están hechas.
+ */
 @Service
 @RequiredArgsConstructor
 public class DashboardService {

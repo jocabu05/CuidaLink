@@ -14,6 +14,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Filtro de seguridad que intercepta CADA petición HTTP para verificar
+ * si lleva un token JWT válido en la cabecera Authorization.
+ * 
+ * Flujo:
+ * 1. Extrae el token de "Authorization: Bearer <token>"
+ * 2. Valida el token con JwtTokenProvider
+ * 3. Si es válido, extrae el ID del usuario y lo guarda en el SecurityContext
+ * 4. Si no hay token o es inválido, deja pasar sin autenticar
+ *    (los endpoints públicos como /api/auth/** seguirán funcionando)
+ * 
+ * Extiende OncePerRequestFilter para ejecutarse exactamente una vez por petición.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

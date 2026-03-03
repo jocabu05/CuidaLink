@@ -1,6 +1,16 @@
+/**
+ * ratingLocalService.ts — Servicio local de valoraciones diarias.
+ *
+ * Permite al familiar valorar cada día con estrellas (1-5) y comentarios.
+ * Los datos se almacenan localmente en AsyncStorage.
+ * Se usa en ValorarScreen y en weeklyReportService para generar informes.
+ *
+ * Métodos:
+ * - valorarDia(): registra valoración del día actual
+ * - getRatings(): obtiene todas las valoraciones
+ * - getUltimaValoracion(): última valoración registrada
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const RATING_KEY = '@cuidalink_ratings';
 
 export interface DayRating {
     id: string;

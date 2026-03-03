@@ -1,3 +1,14 @@
+/**
+ * ComidaScreen.tsx — Pantalla de registro de comida.
+ *
+ * Flujo:
+ * 1. Abre cámara trasera para fotografiar el plato
+ * 2. Captura foto en Base64
+ * 3. Envía al backend como evento COMIDA
+ * 4. Confirma registro exitoso
+ *
+ * La foto sirve como verificación visual de que se ha preparado/servido la comida.
+ */
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Alert, Image } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';

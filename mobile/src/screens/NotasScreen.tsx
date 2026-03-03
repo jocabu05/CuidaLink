@@ -1,8 +1,17 @@
+/**
+ * NotasScreen.tsx — Sistema de notas/avisos entre cuidadora y familiar.
+ *
+ * Funcionalidades:
+ * - Lista de notas con indicador leída/no leída
+ * - Crear notas con prioridad normal o urgente
+ * - Marcar como leída / eliminar / archivar
+ * - Las notas urgentes se destacan visualmente en rojo
+ * - Pull-to-refresh para sincronizar con backend
+ *
+ * Integra: notasService (offline-first con backend)
+ * ~653 líneas
+ */
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TextInput,
     TouchableOpacity,

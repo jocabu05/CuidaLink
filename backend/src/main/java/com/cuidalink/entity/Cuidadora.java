@@ -6,6 +6,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entidad JPA que representa a una cuidadora profesional.
+ * 
+ * Campos principales:
+ * - nombre: nombre completo de la cuidadora
+ * - telefono: número único usado como identificador de login
+ * - pin: código de 4 dígitos hasheado con BCrypt para autenticación
+ * - fotoPerfil: imagen en Base64
+ * - ratingPromedio: media de valoraciones (1-5 estrellas)
+ * - totalRatings: cantidad total de valoraciones recibidas
+ * - activo: si la cuenta está habilitada o desactivada
+ * - eventos: relación 1:N con los eventos que ha registrado
+ * - ratings: relación 1:N con las valoraciones recibidas
+ */
 @Entity
 @Table(name = "cuidadoras")
 @Data

@@ -1,7 +1,19 @@
+/**
+ * chatService.ts — Servicio de chat entre cuidadora y familiar.
+ *
+ * Funcionalidades:
+ * - Enviar mensajes (texto, audio o imagen) al backend
+ * - Cargar historial de mensajes (offline-first con cache local)
+ * - Eliminar mensajes individuales
+ * - Persistencia local en AsyncStorage como fallback offline
+ *
+ * Soporta 3 tipos de mensaje:
+ *   - text: mensaje de texto normal
+ *   - audio: nota de voz (base64 + duración)
+ *   - image: foto (base64)
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
-
-const CHAT_KEY = '@cuidalink_chat';
 
 export interface ChatMessage {
     id: string;

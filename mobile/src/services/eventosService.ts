@@ -1,6 +1,18 @@
+/**
+ * eventosService.ts — Servicio central de eventos/actividades de cuidado.
+ *
+ * Conecta con los endpoints REST del backend para:
+ * - registrarCheckin(): check-in con selfie + GPS (verifica geofence)
+ * - registrarPastilla(): medicamento con foto + OCR
+ * - registrarComida(): comida con foto
+ * - registrarSiesta(): registro de siesta
+ * - registrarCaida(): alerta de emergencia
+ * - getDashboardHoy(): dashboard diario del paciente
+ * - getEventosPaciente(): historial completo de eventos
+ * - getUbicacion(): última ubicación GPS del paciente
+ * - getPerfilAbuelo(): datos del perfil del paciente
+ */
 import api, { DashboardResponse, EventoInfo, UbicacionAbuelo, PerfilAbuelo } from './api';
-
-interface CheckinData {
     abueloId: number;
     selfieBase64: string;
     lat: number;

@@ -17,6 +17,18 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de valoraciones de cuidadoras.
+ * 
+ * crearRating(): Un familiar puntua a una cuidadora (1-5 estrellas + comentario).
+ *   Tras guardar, recalcula el promedio y total estadísticas de la cuidadora.
+ * 
+ * getRatingsCuidadora(): Devuelve el perfil de valoración:
+ *   promedio, total, y los 10 últimos ratings con comentarios.
+ * 
+ * actualizarPromedioCuidadora(): Recalcula AVG(estrellas) y COUNT(*)
+ *   usando queries agregadas del repositorio.
+ */
 @Service
 @RequiredArgsConstructor
 public class RatingService {

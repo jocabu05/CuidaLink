@@ -1,6 +1,17 @@
+/**
+ * tareasService.ts — Servicio de tareas personalizadas creadas por el familiar.
+ *
+ * Permite al familiar añadir tareas extra al día de la cuidadora
+ * (además de las 4 tareas estándar: llegada, pastilla, paseo, comida).
+ *
+ * Métodos:
+ * - crearTarea(): nueva tarea con texto, hora y tipo
+ * - getTareas(): lista todas las tareas activas
+ * - eliminarTarea(): elimina una tarea personalizada
+ *
+ * Almacén: AsyncStorage local.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const TAREAS_KEY = 'cuidalink_tareas_custom';
 
 export interface TareaCustom {
     id: string;

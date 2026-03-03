@@ -13,6 +13,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controlador REST de autenticación para FAMILIARES.
+ * Base path: /api/auth/familiar (público, sin JWT requerido)
+ * 
+ * Endpoints:
+ *   POST /api/auth/familiar/login    → Login con email + contraseña, devuelve JWT con rol FAMILIAR
+ *   POST /api/auth/familiar/register → Registro de nuevo familiar con validaciones:
+ *                                       - Nombre obligatorio
+ *                                       - Email válido y único
+ *                                       - Contraseña mín. 6 caracteres
+ *                                       Genera JWT automático tras registro
+ */
 @RestController
 @RequestMapping("/api/auth/familiar")
 @RequiredArgsConstructor

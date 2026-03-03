@@ -1,8 +1,17 @@
+/**
+ * LoginScreen.tsx — Pantalla de login para CUIDADORAS.
+ *
+ * Autenticación: teléfono + PIN de 4 dígitos.
+ * El PIN se introduce con 4 inputs individuales (auto-focus entre ellos).
+ * Tras login exitoso, guarda el JWT en AsyncStorage y navega al Dashboard.
+ *
+ * Características UI:
+ * - Logo animado con gradiente
+ * - Inputs con estilo moderno y feedback visual
+ * - Botón "Olvidaste tu PIN?" (placeholder)
+ * - Soporta modo oscuro
+ */
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,

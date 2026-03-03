@@ -1,8 +1,17 @@
+/**
+ * MedicacionScreen.tsx — Gestión de medicación del paciente (rol Familiar).
+ *
+ * Funcionalidades:
+ * - Lista de medicamentos con horarios
+ * - Añadir/editar/eliminar medicamentos
+ * - Programar recordatorios de notificación para cada medicamento
+ * - Historial de tomas (cuáles se han verificado hoy)
+ * - Vista de próxima toma con countdown
+ *
+ * Integra: reminderService (notificaciones), eventosService (historial)
+ * ~818 líneas
+ */
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     RefreshControl,

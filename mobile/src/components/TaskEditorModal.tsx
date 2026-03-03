@@ -1,8 +1,12 @@
+/**
+ * TaskEditorModal.tsx — Modal para crear/editar tareas personalizadas.
+ *
+ * El familiar puede añadir tareas extra al día de la cuidadora.
+ * Campos: texto, hora, tipo de tarea.
+ * Se abre como modal bottom-sheet.
+ * Integra: tareasService.
+ */
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     Modal,
     TouchableOpacity,
     ScrollView,

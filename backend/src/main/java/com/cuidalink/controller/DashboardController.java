@@ -6,6 +6,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST del dashboard principal.
+ * Base path: /api/dashboard (requiere JWT)
+ * 
+ * Endpoints:
+ *   GET /api/dashboard/{abueloId}/hoy → Dashboard diario completo:
+ *       - Datos del paciente
+ *       - Eventos registrados hoy
+ *       - Tareas pendientes con estado (completada/pendiente)
+ *       - Estadísticas: porcentaje de avance, total tareas
+ */
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor

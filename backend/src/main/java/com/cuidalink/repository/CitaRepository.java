@@ -6,6 +6,15 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Repositorio JPA para la entidad Cita (calendario compartido).
+ * 
+ * Métodos:
+ * - findByAbueloIdOrderByFechaAscHoraAsc(): todas las citas ordenadas por fecha
+ * - findByAbueloIdAndFechaOrderByHoraAsc(): citas de un día específico
+ * - findByAbueloIdAndFechaBetween...(): citas en un rango (vista mensual)
+ * - findByAbueloIdAndFechaGreaterThanEqual...(): citas futuras (próximas)
+ */
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
 

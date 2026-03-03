@@ -1,3 +1,13 @@
+/**
+ * RoleSelectionScreen.tsx — Pantalla de selección de rol.
+ *
+ * El usuario elige si entra como:
+ *   👩‍⚕️ Cuidadora → navega a LoginScreen (teléfono + PIN)
+ *   👨‍👩‍👧 Familiar → navega a FamiliarLoginScreen (email + contraseña)
+ *
+ * Animaciones de entrada con Animated API.
+ * Soporta modo oscuro.
+ */
 import React, { useEffect, useRef } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions,

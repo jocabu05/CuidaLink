@@ -16,6 +16,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * Controlador REST para registrar y consultar eventos de cuidado.
+ * Base path: /api (requiere JWT)
+ * 
+ * Endpoints de registro (la cuidadora envía datos desde la app):
+ *   POST /api/checkin  → Check-in con selfie + GPS (verifica geofence)
+ *   POST /api/pastilla → Medicamento con foto + verificación OCR
+ *   POST /api/comida   → Comida con foto
+ *   POST /api/caida    → Alerta de caída (emergencia)
+ * 
+ * Endpoints de consulta (el familiar ve los eventos):
+ *   GET /api/eventos/{abueloId}       → Todos los eventos del paciente
+ *   GET /api/eventos/{abueloId}/paged → Eventos paginados (20 por página)
+ *   GET /api/eventos/{abueloId}/hoy   → Solo los eventos de hoy
+ */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor

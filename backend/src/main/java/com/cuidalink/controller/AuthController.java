@@ -9,6 +9,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controlador REST de autenticación para CUIDADORAS.
+ * Base path: /api/auth (público, sin JWT requerido)
+ * 
+ * Endpoints:
+ *   POST /api/auth/login   → Login con teléfono + PIN, devuelve JWT
+ *   GET  /api/auth/me      → Obtiene datos de la cuidadora autenticada
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

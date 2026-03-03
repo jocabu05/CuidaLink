@@ -10,6 +10,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controlador REST de paseos con tracking GPS.
+ * Base path: /api/paseo (requiere JWT)
+ * 
+ * Permite a la cuidadora iniciar/finalizar paseos con el paciente.
+ * Al finalizar se guarda la ruta completa en GeoJSON.
+ * 
+ * Endpoints:
+ *   POST /api/paseo/start  → Iniciar paseo (solo 1 activo a la vez)
+ *   POST /api/paseo/stop   → Finalizar paseo (guarda ruta, distancia, duración)
+ *   GET  /api/paseo/activo → Consultar si hay un paseo en curso
+ */
 @RestController
 @RequestMapping("/api/paseo")
 @RequiredArgsConstructor

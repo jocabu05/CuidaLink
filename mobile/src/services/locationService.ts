@@ -1,6 +1,17 @@
+/**
+ * locationService.ts — Servicio de geolocalización GPS.
+ *
+ * Funcionalidades:
+ * - requestPermissions(): solicita permisos de ubicación al usuario
+ * - getCurrentLocation(): obtiene ubicación actual (alta precisión)
+ * - startWatching(): tracking continuo para paseos (cada 5 seg, 10m mínimo)
+ * - stopWatching(): detiene el tracking y devuelve la ruta completa
+ * - calcularDistanciaTotal(): calcula km totales usando fórmula Haversine
+ * - distanciaHaversine(): distancia en metros entre 2 coordenadas GPS
+ *
+ * Usa expo-location para acceso al GPS del dispositivo.
+ */
 import * as Location from 'expo-location';
-
-export interface LocationData {
     lat: number;
     lng: number;
     accuracy?: number;

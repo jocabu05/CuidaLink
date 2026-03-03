@@ -1,8 +1,19 @@
+/**
+ * MapaZonaScreen.tsx — Mapa interactivo de zonas seguras.
+ *
+ * Funcionalidades:
+ * - Mapa a pantalla completa con ubicación del paciente
+ * - Zona segura dibujada como círculo (radio configurable)
+ * - Marcadores tipo gota (teardrop pins) para pacientes
+ * - Búsqueda de direcciones con geocoding
+ * - Clustering de marcadores cuando hay zoom lejano
+ * - Tooltip con info del paciente al pulsar marcador
+ * - Botón de centrar en ubicación actual
+ *
+ * Integra: eventosService (ubicación), react-native-maps
+ * ~2016 líneas
+ */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,

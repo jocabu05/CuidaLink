@@ -1,7 +1,19 @@
+/**
+ * wearableService.ts — Servicio de datos de dispositivos wearable.
+ *
+ * Simula datos de un smartwatch/pulsera de actividad:
+ * - Pasos (usa Pedometer real de expo-sensors si está disponible)
+ * - Frecuencia cardíaca (simulada: 65-85 bpm)
+ * - Horas de sueño y calidad (simulada)
+ *
+ * Métodos:
+ * - fetchData(): obtiene datos actuales (mezcla real + simulación)
+ * - getData(): lee últimos datos del cache local
+ *
+ * Preparado para sustituir simulación por datos reales de HealthKit/Google Fit.
+ */
 import { Pedometer } from 'expo-sensors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const WEARABLE_KEY = 'cuidalink_wearable';
 
 export interface WearableData {
     steps: number;

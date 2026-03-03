@@ -9,6 +9,23 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+/**
+ * Proveedor de tokens JWT (JSON Web Token) para autenticación.
+ * 
+ * Genera tokens firmados con HMAC-SHA256 que contienen:
+ *   - subject: ID del usuario (cuidadora o familiar)
+ *   - claim "identifier": teléfono (cuidadora) o email (familiar)
+ *   - claim "role": "CUIDADORA" o "FAMILIAR"
+ *   - expiración: 24 horas (configurable en application.yml)
+ * 
+ * Métodos principales:
+ *   - generateToken(): crea un JWT nuevo
+ *   - validateToken(): verifica firma y expiración
+ *   - getCuidadoraIdFromToken(): extrae el ID del subject
+ *   - getRoleFromToken(): extrae el rol del claim
+ * 
+ * La clave secreta se lee de jwt.secret en application.yml.
+ */
 @Component
 public class JwtTokenProvider {
     

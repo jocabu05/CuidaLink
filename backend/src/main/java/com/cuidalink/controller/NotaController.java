@@ -7,6 +7,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controlador REST del sistema de notas/avisos.
+ * Base path: /api/notas (requiere JWT)
+ * 
+ * Sistema de comunicación asíncrona entre cuidadora y familiar.
+ * Las notas pueden ser "normal" o "urgente" y tienen estado leída/no leída.
+ * 
+ * Endpoints:
+ *   POST   /api/notas                → Crear nueva nota
+ *   GET    /api/notas/pendientes     → Notas no leídas
+ *   GET    /api/notas                → Todas las notas
+ *   PUT    /api/notas/{id}/leida     → Marcar nota como leída
+ *   DELETE /api/notas/{id}           → Eliminar nota
+ *   DELETE /api/notas/pendientes     → Eliminar todas las pendientes
+ */
 @RestController
 @RequestMapping("/api/notas")
 public class NotaController {

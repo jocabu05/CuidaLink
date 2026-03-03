@@ -4,6 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad JPA que representa a un familiar del paciente.
+ * Los familiares acceden a la app para supervisar el cuidado remoto.
+ * 
+ * Campos principales:
+ * - email: identificador único para login
+ * - password: contraseña hasheada con BCrypt
+ * - parentesco: relación con el paciente ("Hija", "Hijo", etc.)
+ * - activo: si la cuenta está habilitada
+ */
 @Entity
 @Table(name = "familiares")
 @Data

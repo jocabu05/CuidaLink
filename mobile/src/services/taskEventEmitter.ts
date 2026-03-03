@@ -1,3 +1,14 @@
+/**
+ * taskEventEmitter.ts — Bus de eventos simple para comunicación entre componentes.
+ *
+ * Implementa un patrón Observer/EventEmitter básico.
+ * Se usa para notificar cambios entre pantallas sin acoplamiento directo:
+ *   - 'task_completed' → cuando se completa una tarea (actualiza dashboard)
+ *   - 'nota_leida' → cuando se lee una nota (actualiza badge)
+ *   - 'task_added' → cuando el familiar añade una tarea
+ *
+ * Exporta funciones helper: notifyTaskCompleted(), notifyNotaLeida(), etc.
+ */
 class SimpleEventEmitter {
     private listeners: { [key: string]: ((...args: any[]) => void)[] } = {};
 

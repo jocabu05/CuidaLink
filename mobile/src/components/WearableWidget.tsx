@@ -1,3 +1,10 @@
+/**
+ * WearableWidget.tsx — Widget de datos del wearable/smartwatch.
+ *
+ * Muestra en el dashboard: pasos, frecuencia cardíaca, horas sueño.
+ * Los datos se obtienen de wearableService (real + simulado).
+ * Se actualiza automáticamente al montar el componente.
+ */
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SPACING, SHADOWS } from '../styles/theme';

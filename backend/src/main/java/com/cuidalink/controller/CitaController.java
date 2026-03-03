@@ -8,6 +8,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controlador REST del calendario compartido de citas.
+ * Base path: /api/citas (requiere JWT)
+ * 
+ * Ambos roles (cuidadora y familiar) pueden crear, editar y ver citas.
+ * 
+ * Endpoints:
+ *   GET    /api/citas              → Todas las citas de un paciente
+ *   GET    /api/citas/fecha        → Citas de un día específico
+ *   GET    /api/citas/rango        → Citas entre dos fechas (vista mensual)
+ *   GET    /api/citas/proximas     → Citas futuras (próximas)
+ *   POST   /api/citas              → Crear nueva cita
+ *   PUT    /api/citas/{id}         → Actualizar cita existente
+ *   DELETE /api/citas/{id}         → Eliminar cita
+ */
 @RestController
 @RequestMapping("/api/citas")
 public class CitaController {

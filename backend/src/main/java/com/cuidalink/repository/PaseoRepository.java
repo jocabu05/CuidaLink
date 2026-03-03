@@ -10,6 +10,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio JPA para la entidad Paseo.
+ * 
+ * Métodos:
+ * - findPaseoActivo(): busca el paseo en curso de una cuidadora (activo=true)
+ * - findByAbueloIdOrderByInicioDesc(): historial de paseos de un paciente
+ * - findTodayPaseosByAbueloId(): paseos del día actual
+ */
 @Repository
 public interface PaseoRepository extends JpaRepository<Paseo, Long> {
     

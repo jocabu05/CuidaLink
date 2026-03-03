@@ -12,6 +12,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controlador REST del chat entre cuidadora y familiar.
+ * Base path: /api/chat (requiere JWT)
+ * 
+ * Soporta mensajes de texto, audio (nota de voz) e imagen.
+ * Los mensajes se persisten en BD y se notifican en tiempo real vía WebSocket.
+ * 
+ * Endpoints:
+ *   POST   /api/chat/send     → Enviar mensaje (text/audio/image)
+ *   DELETE /api/chat/{id}      → Eliminar un mensaje por ID
+ *   GET    /api/chat/messages  → Últimos 100 mensajes (orden cronológico)
+ */
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor

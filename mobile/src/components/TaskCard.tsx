@@ -1,3 +1,10 @@
+/**
+ * TaskCard.tsx — Tarjeta de tarea del dashboard.
+ *
+ * Muestra una tarea con: emoji, nombre, hora, estado (completada/pendiente).
+ * Animación de check al completar. Color dinámico según tipo.
+ * Soporta modo oscuro. Se usa en DashboardScreen.
+ */
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { TYPOGRAPHY, SHADOWS, SPACING } from '../styles/theme';

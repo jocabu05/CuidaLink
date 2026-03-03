@@ -1,8 +1,19 @@
+/**
+ * notasService.ts — Servicio de notas/avisos entre cuidadora y familiar.
+ *
+ * Funcionalidades:
+ * - crearNota(): crea nota con prioridad (normal/urgente) y la envía al backend
+ * - getNotas(): obtiene todas las notas (intenta backend, fallback local)
+ * - marcarLeida(): marca una nota como leída en backend y local
+ * - eliminarNota(): borra nota del backend y del almacén local
+ * - getContadorPendientes(): cuenta notas no leídas (para badges)
+ *
+ * Patrón offline-first: cache local en AsyncStorage como respaldo.
+ * Emite evento 'nota_leida' vía taskEventEmitter para actualizar badges.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 import { notifyNotaLeida } from './taskEventEmitter';
-
-const NOTAS_KEY = 'cuidalink_notas';
 
 export interface Nota {
     id: string;

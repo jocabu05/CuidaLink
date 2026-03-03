@@ -1,8 +1,13 @@
+/**
+ * FamiliarRegisterScreen.tsx — Pantalla de registro de nuevos familiares.
+ *
+ * Formulario de 5 campos: nombre, email, teléfono, parentesco, contraseña.
+ * Validaciones en cliente: campos obligatorios, formato email, contraseña mín. 6 chars.
+ * Tras registro exitoso, hace login automático y navega a FamiliarDashboard.
+ *
+ * Soporta modo oscuro. Botón "Ya tengo cuenta" vuelve al login.
+ */
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,

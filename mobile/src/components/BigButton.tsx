@@ -1,8 +1,11 @@
+/**
+ * BigButton.tsx — Componente de botón grande reutilizable.
+ *
+ * Botón con tamaño extra para personas mayores o acciones principales.
+ * Props: title, onPress, color, icon, disabled, loading.
+ * Soporta modo oscuro vía ThemeContext.
+ */
 import React from 'react';
-import {
-    TouchableOpacity,
-    Text,
-    StyleSheet,
     ViewStyle,
     TextStyle,
     ActivityIndicator,

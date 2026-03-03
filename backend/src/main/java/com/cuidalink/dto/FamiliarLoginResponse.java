@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * DTO de respuesta de login exitoso para familiares.
+ * Contiene el JWT y datos del perfil (nombre, email, parentesco).
+ */
 @Data
 @AllArgsConstructor
 @Builder

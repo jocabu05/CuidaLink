@@ -11,6 +11,17 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Repositorio JPA para la entidad Evento.
+ * Queries personalizadas con @Query (JPQL) para filtros complejos.
+ * 
+ * Métodos:
+ * - findByAbueloIdOrderByTimestampDesc(): todos los eventos de un paciente
+ * - findByAbueloIdOrderByTimestampDesc(Pageable): versión paginada
+ * - findByAbueloIdAndTimestampBetween(): eventos en un rango de fechas
+ * - findTodayEventsByAbueloId(): solo los eventos de HOY (CURRENT_DATE)
+ * - countVerificadosByCuidadoraId(): cuenta eventos verificados de una cuidadora
+ */
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Long> {
     

@@ -1,7 +1,18 @@
+/**
+ * calendarReminderService.ts — Gestiona recordatorios de calendario.
+ *
+ * Funcionalidades:
+ * - Programa notificaciones locales para citas:
+ *   · Notificación el día anterior a las 20:00
+ *   · Notificación el mismo día 1 hora antes
+ * - Almacena los IDs de notificaciones programadas en AsyncStorage
+ * - Permite cancelar recordatorios al eliminar citas
+ * - Detecta y limpia recordatorios de citas ya pasadas
+ *
+ * Usa expo-notifications para las notificaciones locales push.
+ */
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const CALENDAR_REMINDERS_KEY = '@cuidalink_calendar_reminders';
 
 export interface CalendarEventReminder {
     eventId: string;

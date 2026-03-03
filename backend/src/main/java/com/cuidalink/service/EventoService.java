@@ -21,6 +21,21 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * Servicio central que registra TODOS los tipos de eventos de cuidado.
+ * Cada evento se persiste en BD y se notifica en tiempo real vía WebSocket.
+ * 
+ * Métodos principales:
+ * - registrarCheckin(): Check-in con selfie + GPS. Verifica geofence (200m del domicilio).
+ * - registrarPastilla(): Medicamento con foto + OCR. Almacena datos de verificación en JSON.
+ * - registrarComida(): Comida con foto verificadora.
+ * - registrarSiesta(): Registro de siesta/descanso.
+ * - registrarCaida(): Alerta de emergencia con GPS. Notifica por canal urgente.
+ * - registrarSalida(): Fin de jornada.
+ * 
+ * Geofencing: Usa fórmula Haversine para calcular distancia GPS.
+ *   Si la cuidadora está a <200m del domicilio → verificado=true.
+ */
 @Service
 @RequiredArgsConstructor
 public class EventoService {

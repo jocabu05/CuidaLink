@@ -1,3 +1,19 @@
+/**
+ * ThemeContext.tsx — Contexto global de tema (modo claro/oscuro).
+ *
+ * Provee a toda la app:
+ * - colors: paleta de colores según el modo actual (claro u oscuro)
+ * - dark: booleano que indica si está en modo oscuro
+ * - toggleTheme(): función para cambiar entre modos
+ *
+ * Paleta principal:
+ * - Azul corporativo (#1565C0) como color primario
+ * - Modo claro: fondos blancos, textos oscuros
+ * - Modo oscuro: fondos oscuros (#121212), textos claros
+ *
+ * La preferencia se persiste en AsyncStorage.
+ * Uso: const { colors, dark, toggleTheme } = useTheme();
+ */
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

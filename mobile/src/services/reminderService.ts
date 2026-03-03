@@ -1,7 +1,19 @@
+/**
+ * reminderService.ts — Servicio de recordatorios de medicación.
+ *
+ * Programa notificaciones locales diarias para tomar pastillas.
+ * Cada recordatorio se repite todos los días a la misma hora.
+ *
+ * Métodos:
+ * - scheduleReminder(): programa recordatorio diario (hora, título, cuerpo)
+ * - cancelReminder(): cancela un recordatorio por ID
+ * - getReminders(): lista todos los recordatorios activos
+ * - cancelAll(): cancela todos los recordatorios
+ *
+ * Usa expo-notifications + AsyncStorage para persistencia.
+ */
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const REMINDERS_KEY = 'cuidalink_reminders';
 
 interface ScheduledReminder {
     id: string;
