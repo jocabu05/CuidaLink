@@ -1,0 +1,43 @@
+# ─── OS ───
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── IDEs ───
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Node / React Native ───
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/npm-debug.log*
+mobile/yarn-debug.log*
+mobile/yarn-error.log*
+mobile/.env
+mobile/.env.local
+
+# ─── Java / Maven ───
+backend/target/
+backend/*.jar
+backend/*.war
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.log
+
+# ─── Database ───
+*.db
+*.sqlite
+
+# ─── Build ───
+*.class
+*.o
+*.pyc
+
+# ─── Secrets ───
+.env
+.env.*
+*.pem
+*.key
