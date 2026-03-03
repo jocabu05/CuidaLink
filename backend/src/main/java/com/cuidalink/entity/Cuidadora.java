@@ -41,7 +41,7 @@ public class Cuidadora {
     @Column(length = 60)
     private String pin;
     
-    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
+    @Column(name = "foto_perfil", columnDefinition = "TEXT")
     private String fotoPerfil;
     
     @Column(name = "rating_promedio", precision = 2, scale = 1)

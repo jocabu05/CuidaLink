@@ -42,7 +42,7 @@ public class Paseo {
     @Column
     private LocalDateTime fin;
     
-    @Column(name = "ruta_geojson", columnDefinition = "JSON")
+    @Column(name = "ruta_geojson", columnDefinition = "TEXT")
     private String rutaGeojson;
     
     @Column(name = "distancia_km", precision = 4, scale = 2)

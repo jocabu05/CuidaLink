@@ -49,7 +49,7 @@ public class Abuelo {
     @Column(name = "telefono_emergencia", length = 15)
     private String telefonoEmergencia;
     
-    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
+    @Column(name = "foto_perfil", columnDefinition = "TEXT")
     private String fotoPerfil;
     
     @Column(name = "notas_medicas", columnDefinition = "TEXT")

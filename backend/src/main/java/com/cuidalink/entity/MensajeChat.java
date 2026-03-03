@@ -43,14 +43,14 @@ public class MensajeChat {
     private String type = "text";
     
     /** Audio en base64 (solo cuando type=audio) */
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String audioBase64;
     
     /** Duración del audio en segundos */
     private Integer audioDuration;
     
     /** Imagen en base64 (solo cuando type=image) */
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String imageBase64;
     
     @Column(nullable = false)

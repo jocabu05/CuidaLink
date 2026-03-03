@@ -52,6 +52,13 @@
             <scope>runtime</scope>
         </dependency>
         
+        <!-- PostgreSQL (Neon cloud) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
         <!-- H2 (dev profile) -->
         <dependency>
             <groupId>com.h2database</groupId>

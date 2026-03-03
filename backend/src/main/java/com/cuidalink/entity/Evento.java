@@ -57,7 +57,7 @@ public class Evento {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
     
-    @Column(name = "foto_base64", columnDefinition = "LONGTEXT")
+    @Column(name = "foto_base64", columnDefinition = "TEXT")
     private String fotoBase64;
     
     @Column(name = "gps_lat", precision = 10)
@@ -70,7 +70,7 @@ public class Evento {
     @Builder.Default
     private Boolean verificado = false;
     
-    @Column(name = "datos_extra", columnDefinition = "JSON")
+    @Column(name = "datos_extra", columnDefinition = "TEXT")
     private String datosExtra;
     
     @Column(length = 255)
