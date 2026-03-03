@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "CuidaLink",
+    "slug": "cuidalink",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4CAF50"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tfg.cuidalink",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CuidaLink necesita acceso a la cámara para tomar selfies de llegada y fotos de medicamentos",
+        "NSLocationWhenInUseUsageDescription": "CuidaLink necesita tu ubicación para verificar llegadas y trackear paseos",
+        "NSLocationAlwaysUsageDescription": "CuidaLink necesita tu ubicación para trackear paseos en segundo plano",
+        "NSMotionUsageDescription": "CuidaLink usa el acelerómetro para detectar posibles caídas"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4CAF50"
+      },
+      "package": "com.tfg.cuidalink",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que CuidaLink use la cámara para selfies y verificación de medicamentos"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permitir que CuidaLink acceda a tu ubicación para verificar llegadas y trackear paseos"
+        }
+      ],
+      "expo-audio"
+    ]
+  }
+}
