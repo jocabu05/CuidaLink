@@ -1,0 +1,25 @@
+package com.cuidalink.controller;
+
+import com.cuidalink.dto.DashboardResponse;
+import com.cuidalink.service.DashboardService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/dashboard")
+@RequiredArgsConstructor
+public class DashboardController {
+    
+    private final DashboardService dashboardService;
+    
+    @GetMapping("/{abueloId}/hoy")
+    public ResponseEntity<DashboardResponse> getDashboardHoy(@PathVariable Long abueloId) {
+        try {
+            DashboardResponse response = dashboardService.getDashboardHoy(abueloId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}
