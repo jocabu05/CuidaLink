@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import {
-    View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList,
-    KeyboardAvoidingView, Platform, Alert, Animated, Vibration,
-    Dimensions, Image, Linking, Modal,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Alert, Animated, Vibration, Dimensions, Image, Linking, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,9 +19,7 @@ const CL = {
     timeText: '#8696A0', recording: '#EE3B3B', audioAccent: '#2196F3',
 };
 
-interface ChatScreenProps {
-    role: 'cuidadora' | 'familiar';
-}
+interface ChatScreenProps { role: 'cuidadora' | 'familiar'; }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -47,11 +41,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ role }) => {
 
     const waveformHeights = useMemo(() => {
         const map: Record<string, number[]> = {};
-        mensajes.forEach(m => {
-            if (m.type === 'audio' && !map[m.id]) {
-                map[m.id] = Array.from({ length: 20 }, () => 4 + Math.random() * 16);
-            }
-        });
+        mensajes.forEach(m => { if (m.type === 'audio' && !map[m.id]) map[m.id] = Array.from({ length: 20 }, () => 4 + Math.random() * 16); });
         return map;
     }, [mensajes]);
 
@@ -67,8 +57,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ role }) => {
         const loadPhotos = async () => {
             try {
                 const myPhoto = await AsyncStorage.getItem(photoKey(role));
-                const contactRole = role === 'cuidadora' ? 'familiar' : 'cuidadora';
-                const otherPhoto = await AsyncStorage.getItem(photoKey(contactRole));
+                const otherPhoto = await AsyncStorage.getItem(photoKey(role === 'cuidadora' ? 'familiar' : 'cuidadora'));
                 if (myPhoto) setProfilePhoto(myPhoto);
                 if (otherPhoto) setContactPhoto(otherPhoto);
             } catch { /* ignore */ }
@@ -81,21 +70,16 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ role }) => {
     useEffect(() => {
         cargarMensajes();
         const interval = setInterval(cargarMensajes, 3000);
-        return () => {
-            clearInterval(interval);
-            voiceService.stopPlayback();
-        };
+        return () => { clearInterval(interval); voiceService.stopPlayback(); };
     }, [cargarMensajes]);
 
     useEffect(() => {
         if (isRecording) {
             Animated.timing(recordBarAnim, { toValue: 1, duration: 250, useNativeDriver: true }).start();
-            const pulse = Animated.loop(
-                Animated.sequence([
-                    Animated.timing(pulseAnim, { toValue: 1.2, duration: 800, useNativeDriver: true }),
-                    Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-                ])
-            );
+            const pulse = Animated.loop(Animated.sequence([
+                Animated.timing(pulseAnim, { toValue: 1.2, duration: 800, useNativeDriver: true }),
+                Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+            ]));
             pulse.start();
             return () => pulse.stop();
         } else {
@@ -118,56 +102,34 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ role }) => {
         try {
             const { status, canAskAgain } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
-                if (!canAskAgain) {
-                    Alert.alert('Permiso necesario', 'Se necesita acceso a la cámara. Actívalo en Ajustes.', [
-                        { text: 'Cancelar', style: 'cancel' },
-                        { text: 'Abrir Ajustes', onPress: () => Linking.openSettings() },
-                    ]);
-                } else {
-                    Alert.alert('Permiso necesario', 'Se necesita acceso a la cámara para hacer fotos.');
-                }
+                if (!canAskAgain) Alert.alert('Permiso necesario', 'Se necesita acceso a la cámara. Actívalo en Ajustes.', [{ text: 'Cancelar', style: 'cancel' }, { text: 'Abrir Ajustes', onPress: () => Linking.openSettings() }]);
+                else Alert.alert('Permiso necesario', 'Se necesita acceso a la cámara para hacer fotos.');
                 return;
             }
-            const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true,
-            });
+            const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true });
             if (!result.canceled && result.assets[0]) {
                 const asset = result.assets[0];
                 const base64 = asset.base64 || await readFileAsBase64(asset.uri);
                 if (base64) await enviarImagen(base64);
             }
-        } catch (e) {
-            console.error('Error cámara:', e);
-            Alert.alert('Error', 'No se pudo abrir la cámara');
-        }
+        } catch (e) { console.error('Error cámara:', e); Alert.alert('Error', 'No se pudo abrir la cámara'); }
     };
 
     const abrirGaleria = async () => {
         try {
             const { status, canAskAgain } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                if (!canAskAgain) {
-                    Alert.alert('Permiso necesario', 'Se necesita acceso a la galería. Actívalo en Ajustes.', [
-                        { text: 'Cancelar', style: 'cancel' },
-                        { text: 'Abrir Ajustes', onPress: () => Linking.openSettings() },
-                    ]);
-                } else {
-                    Alert.alert('Permiso necesario', 'Se necesita acceso a la galería para adjuntar fotos.');
-                }
+                if (!canAskAgain) Alert.alert('Permiso necesario', 'Se necesita acceso a la galería. Actívalo en Ajustes.', [{ text: 'Cancelar', style: 'cancel' }, { text: 'Abrir Ajustes', onPress: () => Linking.openSettings() }]);
+                else Alert.alert('Permiso necesario', 'Se necesita acceso a la galería para adjuntar fotos.');
                 return;
             }
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true,
-            });
+            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true });
             if (!result.canceled && result.assets[0]) {
                 const asset = result.assets[0];
                 const base64 = asset.base64 || await readFileAsBase64(asset.uri);
                 if (base64) await enviarImagen(base64);
             }
-        } catch (e) {
-            console.error('Error galería:', e);
-            Alert.alert('Error', 'No se pudo abrir la galería');
-        }
+        } catch (e) { console.error('Error galería:', e); Alert.alert('Error', 'No se pudo abrir la galería'); }
     };
 
     const readFileAsBase64 = async (uri: string): Promise<string | null> => {

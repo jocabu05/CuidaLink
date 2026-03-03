@@ -14,16 +14,10 @@
  * ~950 líneas | Soporta pull-to-refresh, modo oscuro, animaciones
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-    ScrollView,
-    RefreshControl,
-    Image,
-    ActivityIndicator,
-    TouchableOpacity,
-    Alert,
-    Linking,
-    Modal,
-    Dimensions,
-    Animated,
+import {
+    View, Text, StyleSheet, ScrollView, RefreshControl, Image,
+    ActivityIndicator, TouchableOpacity, Alert, Linking, Modal,
+    Dimensions, Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
