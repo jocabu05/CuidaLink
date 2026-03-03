@@ -1,29 +1,5 @@
-/**
- * BienestarScreen — Pantalla de bienestar del abuelo.
- *
- * Muestra un resumen visual del estado de bienestar del abuelo:
- * - Puntuación semanal de ánimo (basada en valoraciones diarias).
- * - Gráfica de actividad de los últimos 7 días (eventos completados).
- * - Datos de wearable (pasos, frecuencia cardiaca, sueño).
- * - Indicadores de adherencia a medicación, comida y paseos.
- *
- * Obtiene los datos de localEventStorage, ratingLocalService,
- * wearableService y eventosService (API).
- *
- * @module screens/BienestarScreen
- */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    RefreshControl,
-    ActivityIndicator,
-    Dimensions,
-    Platform,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING } from '../styles/theme';
@@ -33,11 +9,8 @@ import wearableService, { WearableData } from '../services/wearableService';
 import eventosService from '../services/eventosService';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-
-// ─── HELPERS ───
 const DAYS_ES = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 
-/** Map rating stars (1-5) to mood display */
 const ratingToMood = (stars: number): { emoji: string; label: string; color: string } => {
     if (stars >= 5) return { emoji: '😊', label: 'Muy bien', color: '#4CAF50' };
     if (stars >= 4) return { emoji: '🙂', label: 'Bien', color: '#8BC34A' };
@@ -46,7 +19,6 @@ const ratingToMood = (stars: number): { emoji: string; label: string; color: str
     return { emoji: '😢', label: 'Muy mal', color: '#F44336' };
 };
 
-/** Get start of N days ago */
 const daysAgo = (n: number): Date => {
     const d = new Date();
     d.setDate(d.getDate() - n);
@@ -54,28 +26,22 @@ const daysAgo = (n: number): Date => {
     return d;
 };
 
-/** Count local events of a given type within a date range */
 const countEventsByType = (events: LocalEvento[], tipo: string, since: Date): number =>
     events.filter(e => e.tipo === tipo && new Date(e.timestamp) >= since).length;
 
-// ─── COMPONENT ───
 const BienestarScreen: React.FC = () => {
     const { isDark, colors } = useTheme();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState<'semana' | 'mes'>('semana');
-
-    // Real data state
     const [allEvents, setAllEvents] = useState<LocalEvento[]>([]);
     const [ratings, setRatings] = useState<DayRating[]>([]);
     const [weeklyAvg, setWeeklyAvg] = useState(0);
     const [wearable, setWearable] = useState<WearableData | null>(null);
     const [todayStats, setTodayStats] = useState<{ total: number; completadas: number; porcentaje: number } | null>(null);
-
     const today = new Date();
     const dateStr = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    // ─── LOAD DATA ───
     const loadData = useCallback(async () => {
         try {
             const [evts, rats, avg, wear] = await Promise.all([
@@ -88,8 +54,6 @@ const BienestarScreen: React.FC = () => {
             setRatings(rats);
             setWeeklyAvg(avg);
             setWearable(wear);
-
-            // Try to get today's task stats from backend (gracefully fail)
             try {
                 const dashboard = await eventosService.getDashboardHoy(1);
                 setTodayStats({
@@ -98,7 +62,6 @@ const BienestarScreen: React.FC = () => {
                     porcentaje: dashboard.estadisticas.porcentajeAvance,
                 });
             } catch {
-                // Fallback: compute from local events
                 const todayEvts = evts.filter(e => new Date(e.timestamp).toDateString() === new Date().toDateString());
                 const completadas = todayEvts.length;
                 setTodayStats({ total: 5, completadas, porcentaje: Math.round((completadas / 5) * 100) });
@@ -118,11 +81,9 @@ const BienestarScreen: React.FC = () => {
         setRefreshing(false);
     }, [loadData]);
 
-    // ─── DERIVED DATA ───
     const periodDays = selectedPeriod === 'semana' ? 7 : 30;
     const since = useMemo(() => daysAgo(periodDays), [periodDays]);
 
-    // Week mood from real ratings
     const weekMoods = useMemo(() => {
         const result: { day: string; emoji: string; label: string; color: string; date: string }[] = [];
         for (let i = 6; i >= 0; i--) {
@@ -141,7 +102,6 @@ const BienestarScreen: React.FC = () => {
         return result;
     }, [ratings]);
 
-    // Activity counts from real events
     const activityCounts = useMemo(() => {
         const pastillas = countEventsByType(allEvents, 'PASTILLA', since);
         const paseos = countEventsByType(allEvents, 'PASEO', since);
@@ -151,44 +111,23 @@ const BienestarScreen: React.FC = () => {
         return { pastillas, paseos, comidas, siestas, llegadas };
     }, [allEvents, since]);
 
-    // Medication adherence from real events
     const medAdherence = useMemo(() => {
-        // Expected: 2 pastilla events/day (10:30 + 18:30 Sinemet) + 1 Aricept + 1 Memantina = simplify as total pastilla events
-        const esperadas = selectedPeriod === 'semana' ? 7 * 3 : 30 * 3; // 3 meds per day
+        const esperadas = selectedPeriod === 'semana' ? 7 * 3 : 30 * 3;
         const tomadas = countEventsByType(allEvents, 'PASTILLA', since);
         return { tomadas, esperadas, pct: esperadas > 0 ? Math.min(Math.round((tomadas / esperadas) * 100), 100) : 0 };
     }, [allEvents, since, selectedPeriod]);
 
-    // Overall wellness score from real data
     const overallScore = useMemo(() => {
-        let score = 0;
-        let factors = 0;
-
-        // Factor 1: Medication adherence (0-100)
-        if (medAdherence.esperadas > 0) {
-            score += medAdherence.pct;
-            factors++;
-        }
-
-        // Factor 2: Weekly mood average (1-5 → 0-100)
-        if (weeklyAvg > 0) {
-            score += (weeklyAvg / 5) * 100;
-            factors++;
-        }
-
-        // Factor 3: Today's task completion
-        if (todayStats) {
-            score += todayStats.porcentaje;
-            factors++;
-        }
-
+        let score = 0, factors = 0;
+        if (medAdherence.esperadas > 0) { score += medAdherence.pct; factors++; }
+        if (weeklyAvg > 0) { score += (weeklyAvg / 5) * 100; factors++; }
+        if (todayStats) { score += todayStats.porcentaje; factors++; }
         return factors > 0 ? Math.round(score / factors) : 0;
     }, [medAdherence, weeklyAvg, todayStats]);
 
     const statusColor = overallScore >= 80 ? colors.success : overallScore >= 60 ? colors.warning : overallScore > 0 ? colors.danger : colors.textSecondary;
     const statusLabel = overallScore >= 80 ? 'Muy bien' : overallScore >= 60 ? 'Aceptable' : overallScore > 0 ? 'Necesita atención' : 'Sin datos';
 
-    // ─── LOADING ───
     if (loading) {
         return (
             <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -201,10 +140,8 @@ const BienestarScreen: React.FC = () => {
     const hasRatings = ratings.length > 0;
     const hasEvents = allEvents.length > 0;
 
-    // ─── RENDER ───
     return (
         <View style={[styles.root, { backgroundColor: colors.background }]}>
-            {/* ═══ HEADER ═══ */}
             <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
                 <View style={[styles.headerCircle1, { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
                 <View style={[styles.headerCircle2, { backgroundColor: 'rgba(255,255,255,0.04)' }]} />
@@ -212,7 +149,6 @@ const BienestarScreen: React.FC = () => {
                 <Text style={styles.headerTitle}>Bienestar</Text>
                 <Text style={styles.headerDate}>{dateStr}</Text>
 
-                {/* Overall score ring */}
                 <View style={styles.scoreContainer}>
                     <View style={[styles.scoreRingOuter, { borderColor: 'rgba(255,255,255,0.15)' }]}>
                         <View style={[styles.scoreRingInner, { borderColor: statusColor, borderTopColor: statusColor, borderRightColor: statusColor }]}>
@@ -233,7 +169,6 @@ const BienestarScreen: React.FC = () => {
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
             >
-                {/* ═══ PERIOD SELECTOR ═══ */}
                 <View style={[styles.periodRow, { backgroundColor: colors.card }]}>
                     {(['semana', 'mes'] as const).map(p => (
                         <TouchableOpacity
@@ -249,7 +184,6 @@ const BienestarScreen: React.FC = () => {
                     ))}
                 </View>
 
-                {/* ═══ TODAY'S PROGRESS ═══ */}
                 {todayStats && (
                     <>
                         <SectionTitle icon="today" title="Progreso de hoy" colors={colors} />
@@ -277,7 +211,6 @@ const BienestarScreen: React.FC = () => {
                     </>
                 )}
 
-                {/* ═══ MOOD TRACKER ═══ */}
                 <SectionTitle icon="happy" title="Estado de ánimo (valoraciones)" colors={colors} />
                 <View style={[styles.card, { backgroundColor: colors.card }]}>
                     {hasRatings ? (
@@ -315,7 +248,6 @@ const BienestarScreen: React.FC = () => {
                     </Text>
                 </View>
 
-                {/* ═══ MEDICATION ADHERENCE ═══ */}
                 <SectionTitle icon="medical" title="Adherencia a medicación" colors={colors} />
                 <View style={[styles.card, { backgroundColor: colors.card }]}>
                     {hasEvents ? (
@@ -355,7 +287,6 @@ const BienestarScreen: React.FC = () => {
                     </Text>
                 </View>
 
-                {/* ═══ ACTIVITY GRID ═══ */}
                 <SectionTitle icon="pulse" title={`Actividad (${selectedPeriod === 'semana' ? 'últimos 7 días' : 'últimos 30 días'})`} colors={colors} />
                 {hasEvents ? (
                     <View style={styles.activityGrid}>
@@ -376,7 +307,6 @@ const BienestarScreen: React.FC = () => {
                     </Text>
                 )}
 
-                {/* ═══ STEPS (real pedometer when available) ═══ */}
                 {wearable && (
                     <>
                         <SectionTitle icon="footsteps" title="Actividad física" colors={colors} />
@@ -410,7 +340,6 @@ const BienestarScreen: React.FC = () => {
                     </>
                 )}
 
-                {/* ═══ SLEEP (from wearable — show with disclaimer) ═══ */}
                 {wearable && (
                     <>
                         <SectionTitle icon="moon" title="Sueño (estimado)" colors={colors} />
@@ -443,7 +372,6 @@ const BienestarScreen: React.FC = () => {
                     </>
                 )}
 
-                {/* ═══ SUMMARY CARD ═══ */}
                 <SectionTitle icon="analytics" title="Resumen" colors={colors} />
                 <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <SummaryRow icon="medical" label="Medicación" value={`${medAdherence.pct}%`} valueColor={medAdherence.pct >= 90 ? colors.success : medAdherence.pct >= 70 ? colors.warning : colors.danger} colors={colors} />
@@ -455,7 +383,6 @@ const BienestarScreen: React.FC = () => {
                     <SummaryRow icon="footsteps" label="Pasos hoy" value={wearable ? wearable.steps.toLocaleString() : '—'} valueColor={wearable && wearable.steps >= 3000 ? colors.success : colors.text} colors={colors} />
                 </View>
 
-                {/* ═══ NO DATA MESSAGE ═══ */}
                 {!hasEvents && !hasRatings && (
                     <View style={[styles.noDataCard, { backgroundColor: isDark ? colors.roleLight : '#E3F2FD' }]}>
                         <View style={[styles.noDataIconWrap, { backgroundColor: colors.primary + '20' }]}>
@@ -476,7 +403,6 @@ const BienestarScreen: React.FC = () => {
     );
 };
 
-// ─── REUSABLE COMPONENTS ───
 const SectionTitle = ({ icon, title, colors }: { icon: string; title: string; colors: any }) => (
     <View style={styles.sectionHeader}>
         <Ionicons name={icon as any} size={18} color={colors.primary} />
@@ -510,15 +436,12 @@ const EmptyState = ({ icon, message, colors }: { icon: string; message: string; 
     </View>
 );
 
-// ─── STYLES ───
 const styles = StyleSheet.create({
     root: { flex: 1 },
     scroll: { flex: 1 },
     scrollContent: { paddingBottom: 20 },
     loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     loadingText: { marginTop: 12, fontSize: 15 },
-
-    /* Header */
     header: {
         paddingTop: Platform.OS === 'ios' ? 60 : 48,
         paddingBottom: 30,
@@ -540,26 +463,18 @@ const styles = StyleSheet.create({
     scoreLabelPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, marginTop: 10, gap: 6 },
     scoreLabelDot: { width: 8, height: 8, borderRadius: 4 },
     scoreLabelText: { fontSize: 13, fontWeight: '700' },
-
-    /* Period */
     periodRow: {
         flexDirection: 'row', marginHorizontal: 20, marginTop: 16, borderRadius: 12, padding: 4,
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
     periodBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
     periodBtnText: { fontSize: 14, fontWeight: '600' },
-
-    /* Section header */
     sectionHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginTop: 24, marginBottom: 10, gap: 8 },
     sectionTitle: { fontSize: 17, fontWeight: '700', letterSpacing: 0.2 },
-
-    /* Generic card */
     card: {
         marginHorizontal: 20, borderRadius: 16, padding: 16,
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
-
-    /* Today's progress */
     todayRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
     todayInfo: {},
     todayLabel: { fontSize: 13, marginBottom: 4 },
@@ -568,8 +483,6 @@ const styles = StyleSheet.create({
     todayPct: { fontSize: 16, fontWeight: '700' },
     todayBar: { height: 8, borderRadius: 4, overflow: 'hidden' },
     todayBarFill: { height: 8, borderRadius: 4 },
-
-    /* Mood */
     moodRow: { flexDirection: 'row', justifyContent: 'space-between' },
     moodItem: { alignItems: 'center', gap: 4 },
     moodDay: { fontSize: 12, fontWeight: '600' },
@@ -580,16 +493,12 @@ const styles = StyleSheet.create({
     moodAvgLabel: { fontSize: 13 },
     moodAvgStars: { flexDirection: 'row', alignItems: 'center', gap: 3 },
     moodAvgValue: { fontSize: 14, fontWeight: '700', marginLeft: 6 },
-
-    /* Medication adherence */
     medSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
     medSummaryValue: { fontSize: 24, fontWeight: '800' },
     medSummaryLabel: { fontSize: 12, marginTop: 2 },
     barTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
     barFill: { height: 8, borderRadius: 4 },
     medPctText: { fontSize: 14, fontWeight: '700', marginTop: 8, textAlign: 'center' },
-
-    /* Activity grid */
     activityGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, gap: 10 },
     activityCard: {
         width: (SCREEN_W - 52) / 2, borderRadius: 16, padding: 14, alignItems: 'center',
@@ -599,8 +508,6 @@ const styles = StyleSheet.create({
     activityValue: { fontSize: 24, fontWeight: '800' },
     activityLabel: { fontSize: 13, fontWeight: '600', marginTop: 2 },
     activitySub: { fontSize: 11, marginTop: 2 },
-
-    /* Steps */
     stepsRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 10 },
     stepsIconWrap: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
     stepsInfo: { flex: 1 },
@@ -608,30 +515,20 @@ const styles = StyleSheet.create({
     stepsLabel: { fontSize: 13, marginTop: 2 },
     stepsGoal: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, gap: 4 },
     stepsGoalText: { fontSize: 12, fontWeight: '600' },
-
-    /* Sleep */
     sleepTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
     sleepMain: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
     sleepHours: { fontSize: 36, fontWeight: '800' },
     sleepHoursUnit: { fontSize: 16, fontWeight: '500' },
     sleepQualityPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, gap: 4 },
     sleepQualityText: { fontSize: 13, fontWeight: '700' },
-
-    /* Summary */
     summaryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 10 },
     summaryLabel: { flex: 1, fontSize: 14 },
     summaryValue: { fontSize: 15, fontWeight: '700' },
     summaryDivider: { height: 1 },
-
-    /* Source hint */
     sourceHint: { fontSize: 11, marginTop: 10, lineHeight: 16 },
     sourceHintMargin: { fontSize: 11, marginTop: 8, paddingHorizontal: 20, lineHeight: 16 },
-
-    /* Empty state */
     emptyState: { alignItems: 'center', paddingVertical: 20, gap: 8 },
     emptyText: { fontSize: 13, textAlign: 'center', lineHeight: 19, paddingHorizontal: 10 },
-
-    /* No data card */
     noDataCard: { flexDirection: 'row', marginHorizontal: 20, marginTop: 24, borderRadius: 16, padding: 14 },
     noDataIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
     noDataContent: { flex: 1 },

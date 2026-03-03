@@ -1,38 +1,10 @@
-/**
- * MapaZonaScreen.tsx — Mapa interactivo de zonas seguras.
- *
- * Funcionalidades:
- * - Mapa a pantalla completa con ubicación del paciente
- * - Zona segura dibujada como círculo (radio configurable)
- * - Marcadores tipo gota (teardrop pins) para pacientes
- * - Búsqueda de direcciones con geocoding
- * - Clustering de marcadores cuando hay zoom lejano
- * - Tooltip con info del paciente al pulsar marcador
- * - Botón de centrar en ubicación actual
- *
- * Integra: eventosService (ubicación), react-native-maps
- * ~2016 líneas
- */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-    ScrollView,
-    TouchableOpacity,
-    ActivityIndicator,
-    Platform,
-    Animated,
-    Dimensions,
-    Image,
-    Linking,
-    TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Animated, Dimensions, Image, Linking, TextInput } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ─── POI CATEGORIES ───
 interface POICategory {
     id: string;
     label: string;
@@ -54,7 +26,6 @@ const CATEGORIES: POICategory[] = [
     { id: 'monumento',    label: 'Monumentos',       icon: '⛪', emoji: '⛪', color: '#5E35B1', osmTag: 'historic=monument|tourism=attraction', ionicon: 'compass' },
 ];
 
-// ─── POI Interface ───
 interface POI {
     id: string;
     name: string;
@@ -69,12 +40,7 @@ interface POI {
     googleQuery?: string;
 }
 
-// ─── HARDCODED POIs across ALL of Alzira (every zone) ───
 const LOCAL_POIS: POI[] = [
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA CENTRO (Plaça Major, Santos Patronos, Hort dels Frares)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'f1', name: 'Farmacia Ortopedia Mateu',      category: 'farmacia', lat: 39.1525, lng: -0.4345, address: 'Av. Santos Patronos, 28', horario: 'L-V 9:00-21:00', googleQuery: 'Farmacia Ortopedia Mateu Alzira' },
     { id: 'f2', name: 'Farmacia Plaza Mayor',           category: 'farmacia', lat: 39.1500, lng: -0.4370, address: 'Plaça Major, 3', horario: 'L-S 9:00-20:30', googleQuery: 'Farmacia Plaza Mayor Alzira' },
     { id: 'f4', name: 'Farmacia Faubel',                category: 'farmacia', lat: 39.1488, lng: -0.4310, address: 'C/ Pare Castells, 6', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Faubel Alzira' },
@@ -95,10 +61,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'm2', name: 'Ayuntamiento de Alzira',        category: 'monumento', lat: 39.1502, lng: -0.4368, address: 'Plaça Major, 1', description: 'Edificio histórico con fachada neoclásica', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Ajuntament_d%27Alzira_-_2.jpg/440px-Ajuntament_d%27Alzira_-_2.jpg', googleQuery: 'Ayuntamiento Alzira' },
     { id: 'm3', name: 'Muralla Árabe',                  category: 'monumento', lat: 39.1485, lng: -0.4355, address: 'C/ la Vila', description: 'Restos de la muralla medieval árabe de Alzira', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Alzira._Muralla_1.jpg/440px-Alzira._Muralla_1.jpg', googleQuery: 'Muralla Arabe Alzira' },
     { id: 'm5', name: 'Casa de la Cultura',             category: 'monumento', lat: 39.1510, lng: -0.4372, address: 'C/ Pare Castells, 12', description: 'Centro cultural en edificio restaurado del s.XVIII', googleQuery: 'Casa Cultura Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA LA VILA (sur del casco antiguo, C/ la Vila)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'f5', name: 'Farmacia García Berlanga',       category: 'farmacia', lat: 39.1460, lng: -0.4388, address: 'C/ la Vila, 22', horario: 'L-V 9:00-20:30', googleQuery: 'Farmacia Garcia Berlanga Alzira' },
     { id: 's5', name: 'Mercadona La Vila',           category: 'super', lat: 39.1455, lng: -0.4370, address: 'C/ la Vila, 35', horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mercadona_Picanya.jpg/640px-Mercadona_Picanya.jpg', googleQuery: 'Mercadona la Vila Alzira' },
     { id: 'h4', name: 'Consultorio La Vila',            category: 'salud', lat: 39.1462, lng: -0.4375, address: 'C/ la Vila, 45', phone: '962 41 02 10', horario: 'L-V 8:00-15:00', googleQuery: 'Consultorio Vila Alzira' },
@@ -109,10 +71,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'v_c1', name: 'Bar La Vila',             category: 'cafe', lat: 39.1445, lng: -0.4383, address: 'C/ la Vila, 50', horario: 'L-D 7:00-22:00', googleQuery: 'Bar la Vila Alzira' },
     { id: 'v_r1', name: 'Restaurante El Portalet', category: 'restaurante', lat: 39.1442, lng: -0.4370, address: 'C/ la Vila, 58', horario: 'L-S 13:00-16:00, 20:00-23:00', googleQuery: 'Restaurante Portalet Alzira' },
     { id: 'v_b1', name: 'Forn Sant Agustí',        category: 'panaderia', lat: 39.1448, lng: -0.4355, address: 'C/ Major de Sant Agustí, 45', horario: 'L-S 7:00-14:00', googleQuery: 'Forn Sant Agusti Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA RIBERA / XÚQUER (oeste, paseo del río)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'p1', name: "Parc de l'Alquenència",      category: 'parque', lat: 39.1520, lng: -0.4385, address: 'Ribera del Xúquer', description: 'Gran parque junto al río Xúquer, ideal para paseos', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Alzira_parc_alquenencia.jpg/640px-Alzira_parc_alquenencia.jpg', googleQuery: 'Parc Alquenencia Alzira' },
     { id: 'p4', name: 'Paseo Ribera del Xúquer',    category: 'parque', lat: 39.1510, lng: -0.4400, address: 'Ribera del río', description: 'Paseo fluvial con vistas al río', googleQuery: 'Paseo Ribera Xuquer Alzira' },
     { id: 'c5', name: 'Cafetería Ribera',          category: 'cafe', lat: 39.1512, lng: -0.4408, address: 'Paseo Ribera, 15', horario: 'L-D 8:00-22:00', googleQuery: 'Cafeteria Ribera Alzira' },
@@ -121,10 +79,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'm4', name: 'Puente de San Bernardo',        category: 'monumento', lat: 39.1528, lng: -0.4410, address: 'Sobre el río Xúquer', description: 'Puente histórico con vistas al río', googleQuery: 'Puente San Bernardo Alzira' },
     { id: 'rb_r1', name: 'Restaurante Xúquer',     category: 'restaurante', lat: 39.1535, lng: -0.4425, address: 'Paseo Ribera Norte, 3', horario: 'L-D 13:00-16:00, 20:00-23:00', description: 'Terraza con vistas al río', googleQuery: 'Restaurante Xuquer Alzira' },
     { id: 'rb_c1', name: 'Kiosco Ribera',          category: 'cafe', lat: 39.1498, lng: -0.4418, address: 'Paseo Ribera Sur', horario: 'L-D 8:00-21:00', description: 'Kiosco junto al río, ideal para desayunos', googleQuery: 'Kiosco Ribera Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA ALQUERIETA (oeste/noroeste, al otro lado del río)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'f7', name: 'Farmacia Tulell',                category: 'farmacia', lat: 39.1535, lng: -0.4420, address: 'C/ Tulell, 18', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Tulell Alzira' },
     { id: 's6', name: 'Consum Tulell',               category: 'super', lat: 39.1548, lng: -0.4430, address: 'C/ Tulell, 40', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Tulell Alzira' },
     { id: 's7', name: 'Mas y Mas',                   category: 'super', lat: 39.1490, lng: -0.4410, address: 'Av. de la Ribera, 12', horario: 'L-S 9:00-21:00', googleQuery: 'Masymas Alzira' },
@@ -136,10 +90,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'aq_r1', name: 'Restaurante La Alquerieta', category: 'restaurante', lat: 39.1570, lng: -0.4488, address: 'C/ Alquerieta, 30', horario: 'L-S 13:00-16:00, 20:00-23:00', googleQuery: 'Restaurante Alquerieta Alzira' },
     { id: 'aq_b1', name: 'Horno Alquerieta',       category: 'panaderia', lat: 39.1558, lng: -0.4452, address: 'Av. Alquerieta, 10', horario: 'L-S 7:00-14:00, 17:00-20:00', googleQuery: 'Horno Alquerieta Alzira' },
     { id: 'aq_p1', name: 'Parque Alquerieta Norte', category: 'parque', lat: 39.1580, lng: -0.4490, address: 'Zona norte Alquerieta', description: 'Zona verde con bancos y columpios', googleQuery: 'Parque norte Alquerieta Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA ESTACIÓN / NORTE (estación RENFE, zona norte)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'f3', name: 'Farmacia Av. de la Hispanidad',  category: 'farmacia', lat: 39.1540, lng: -0.4290, address: 'Av. Hispanidad, 14', horario: 'L-V 9:30-20:00', googleQuery: 'Farmacia Hispanidad Alzira' },
     { id: 'f6', name: 'Farmacia Estación',              category: 'farmacia', lat: 39.1558, lng: -0.4315, address: 'Av. de la Estación, 5', horario: 'L-S 8:30-21:00', googleQuery: 'Farmacia Estacion Alzira' },
     { id: 's3', name: 'Lidl Alzira',                category: 'super', lat: 39.1555, lng: -0.4280, address: 'Av. de la Hispanidad', horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lidl_in_Afragola%2C_Italy%2C_2020.jpg/640px-Lidl_in_Afragola%2C_Italy%2C_2020.jpg', googleQuery: 'Lidl Alzira' },
@@ -156,20 +106,12 @@ const LOCAL_POIS: POI[] = [
     { id: 'n_r1', name: 'Pizzería Nápoles',         category: 'restaurante', lat: 39.1588, lng: -0.4298, address: 'Av. de la Hispanidad, 45', horario: 'L-D 12:00-23:00', googleQuery: 'Pizzeria Napoles Alzira' },
     { id: 'n_b1', name: 'Forn de Pa Nord',          category: 'panaderia', lat: 39.1592, lng: -0.4312, address: 'C/ Norte, 8', horario: 'L-S 6:30-14:00', googleQuery: 'Forn Pa Nord Alzira' },
     { id: 'n_p1', name: 'Parque Zona Norte',        category: 'parque', lat: 39.1610, lng: -0.4318, address: 'Av. Nord', description: 'Parque con pistas deportivas y zona infantil', googleQuery: 'Parque norte Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA HOSPITAL / ESTE (Hospital de la Ribera, Corbera)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'h2', name: 'Hospital de la Ribera',          category: 'salud', lat: 39.1580, lng: -0.4250, address: 'Ctra. de Corbera km 1', phone: '962 45 81 00', horario: '24h', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Hospital_Universitari_de_la_Ribera_01.jpg/640px-Hospital_Universitari_de_la_Ribera_01.jpg', googleQuery: 'Hospital de la Ribera Alzira' },
     { id: 'p6', name: 'Jardines del Hospital',       category: 'parque', lat: 39.1575, lng: -0.4260, address: 'Junto al Hospital de la Ribera', description: 'Zona verde junto al hospital', googleQuery: 'Jardines Hospital Ribera Alzira' },
     { id: 'ho_f1', name: 'Farmacia Hospital',       category: 'farmacia', lat: 39.1585, lng: -0.4242, address: 'Ctra. Corbera, 3', horario: 'L-V 8:00-22:00', googleQuery: 'Farmacia Hospital Ribera Alzira' },
     { id: 'ho_c1', name: 'Cafetería del Hospital',  category: 'cafe', lat: 39.1578, lng: -0.4248, address: 'Interior Hospital de la Ribera', horario: 'L-D 7:00-21:00', googleQuery: 'Cafeteria Hospital Ribera Alzira' },
     { id: 'ho_s1', name: 'Consum Zona Hospital',    category: 'super', lat: 39.1590, lng: -0.4235, address: 'Ctra. de Corbera, 8', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Hospital Alzira' },
     { id: 'ho_r1', name: 'Restaurante La Corbera',  category: 'restaurante', lat: 39.1592, lng: -0.4222, address: 'Ctra. Corbera km 2', horario: 'L-S 13:00-16:00', description: 'Cocina mediterránea junto al hospital', googleQuery: 'Restaurante Corbera Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA ALBORXÍ / SURESTE (Camí d'Alborxí, polígonos)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'f8', name: 'Farmacia Alborxí',               category: 'farmacia', lat: 39.1465, lng: -0.4250, address: "Camí d'Alborxí, 3", horario: 'L-V 9:00-21:00', googleQuery: 'Farmacia Alborxi Alzira' },
     { id: 's4', name: 'Aldi Alzira',                category: 'super', lat: 39.1475, lng: -0.4255, address: 'C/ Pere Morell, 1', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/ALDI_Nord_201x_logo.svg/440px-ALDI_Nord_201x_logo.svg.png', googleQuery: 'Aldi Alzira' },
     { id: 'al_s1', name: 'Mercadona Alborxí',       category: 'super', lat: 39.1445, lng: -0.4230, address: "Camí d'Alborxí, 15", horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mercadona_Picanya.jpg/640px-Mercadona_Picanya.jpg', googleQuery: 'Mercadona Alborxi Alzira' },
@@ -178,10 +120,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'al_r1', name: 'Restaurante Alborxí',     category: 'restaurante', lat: 39.1440, lng: -0.4240, address: "Camí d'Alborxí, 22", horario: 'L-S 12:00-16:00', googleQuery: 'Restaurante Alborxi Alzira' },
     { id: 'al_b1', name: 'Forn Alborxí',            category: 'panaderia', lat: 39.1450, lng: -0.4248, address: "Camí d'Alborxí, 10", horario: 'L-S 7:00-14:00', googleQuery: 'Forn Alborxi Alzira' },
     { id: 'al_p1', name: 'Zona Verde Alborxí',      category: 'parque', lat: 39.1435, lng: -0.4258, address: 'Camino de Alborxí', description: 'Pequeña plaza ajardinada', googleQuery: 'Parque Alborxi Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA SUR / AIGÜERA (sur de Alzira, hacia Carcaixent)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'p2', name: 'Jardí de la Murta',           category: 'parque', lat: 39.1480, lng: -0.4350, address: 'Junto antiguo convento', description: 'Jardín histórico con fuentes y bancos', googleQuery: 'Jardi de la Murta Alzira' },
     { id: 'p5', name: "Parc de l'Aigüera",           category: 'parque', lat: 39.1440, lng: -0.4330, address: 'Zona Sur, Alzira', description: 'Parque con árboles centenarios', googleQuery: 'Parc Aiguera Alzira' },
     { id: 'su_f1', name: 'Farmacia Sur',             category: 'farmacia', lat: 39.1418, lng: -0.4340, address: 'Av. del Sur, 12', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Sur Alzira' },
@@ -191,20 +129,12 @@ const LOCAL_POIS: POI[] = [
     { id: 'su_b1', name: 'Horno del Sur',            category: 'panaderia', lat: 39.1420, lng: -0.4348, address: 'C/ del Sur, 8', horario: 'L-S 7:00-14:00, 17:00-20:00', googleQuery: 'Horno Sur Alzira' },
     { id: 'su_p1', name: 'Parque Sur Alzira',        category: 'parque', lat: 39.1395, lng: -0.4345, address: 'Zona sur, junto CV-50', description: 'Parque con pista de petanca y bancos', googleQuery: 'Parque Sur Alzira' },
     { id: 'su_h1', name: 'Consultorio Sur',          category: 'salud', lat: 39.1400, lng: -0.4355, address: 'Av. del Sur, 40', phone: '962 41 03 20', horario: 'L-V 8:00-15:00', googleQuery: 'Consultorio Sur Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA VENECIA / SUROESTE (barrio residencial junto al río)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 've_f1', name: 'Farmacia Venecia',         category: 'farmacia', lat: 39.1475, lng: -0.4462, address: 'Av. Venecia, 8', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Venecia Alzira' },
     { id: 've_s1', name: 'Supermercado Venecia',     category: 'super', lat: 39.1468, lng: -0.4480, address: 'Av. Venecia, 20', horario: 'L-S 9:00-21:00', googleQuery: 'Supermercado Venecia Alzira' },
     { id: 've_c1', name: 'Bar Venecia',              category: 'cafe', lat: 39.1470, lng: -0.4468, address: 'Av. Venecia, 12', horario: 'L-D 7:00-22:00', googleQuery: 'Bar Venecia Alzira' },
     { id: 've_r1', name: 'Restaurante El Xúquer',   category: 'restaurante', lat: 39.1480, lng: -0.4475, address: 'Paseo del Xúquer, 5', horario: 'L-D 13:00-16:00, 20:00-23:30', description: 'Terraza con vistas al meandro del Xúquer', googleQuery: 'Restaurante Xuquer Alzira' },
     { id: 've_p1', name: 'Paseo de Venecia',         category: 'parque', lat: 39.1478, lng: -0.4492, address: 'Ribera Xúquer Sur', description: 'Paseo junto al meandro del río, vistas espectaculares', googleQuery: 'Paseo Venecia Alzira' },
     { id: 've_b1', name: 'Forn Venecia',             category: 'panaderia', lat: 39.1465, lng: -0.4470, address: 'Av. Venecia, 15', horario: 'L-S 7:00-14:00', googleQuery: 'Horno Venecia Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA CV-50 / POLÍGONO NORTE (carretera, zona comercial)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'pn_s1', name: 'Carrefour Express',       category: 'super', lat: 39.1635, lng: -0.4290, address: 'CV-50 zona norte', horario: 'L-S 9:00-21:30', googleQuery: 'Carrefour Express Alzira' },
     { id: 'pn_s2', name: 'Consum CV-50',            category: 'super', lat: 39.1625, lng: -0.4320, address: 'CV-50, km 2', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum CV-50 Alzira' },
     { id: 'pn_r1', name: 'McDonalds Alzira',        category: 'restaurante', lat: 39.1640, lng: -0.4275, address: 'CV-50 Norte', horario: 'L-D 8:00-01:00', googleQuery: 'McDonalds Alzira' },
@@ -212,81 +142,45 @@ const LOCAL_POIS: POI[] = [
     { id: 'pn_r3', name: 'Telepizza Alzira',        category: 'restaurante', lat: 39.1628, lng: -0.4285, address: 'CV-50 Norte', horario: 'L-D 12:00-23:30', googleQuery: 'Telepizza Alzira' },
     { id: 'pn_c1', name: 'Gasolinera Repsol (cafetería)', category: 'cafe', lat: 39.1650, lng: -0.4250, address: 'CV-50 Norte', horario: 'L-D 6:00-22:00', googleQuery: 'Gasolinera Repsol Alzira norte' },
     { id: 'pn_f1', name: 'Farmacia CV-50',          category: 'farmacia', lat: 39.1632, lng: -0.4300, address: 'CV-50, 15', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia CV-50 Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA TREMOLAR / ESTE (barrio residencial este)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'tr_f1', name: 'Farmacia El Tremolar',    category: 'farmacia', lat: 39.1505, lng: -0.4210, address: 'Av. del Tremolar, 8', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Tremolar Alzira' },
     { id: 'tr_s1', name: 'Consum El Tremolar',      category: 'super', lat: 39.1510, lng: -0.4198, address: 'Av. del Tremolar, 20', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Tremolar Alzira' },
     { id: 'tr_c1', name: 'Bar El Tremolar',         category: 'cafe', lat: 39.1498, lng: -0.4205, address: 'C/ del Tremolar, 5', horario: 'L-D 7:00-21:00', googleQuery: 'Bar Tremolar Alzira' },
     { id: 'tr_r1', name: 'Restaurante La Huerta',   category: 'restaurante', lat: 39.1515, lng: -0.4185, address: 'Camí del Tremolar', horario: 'L-S 13:00-16:00', description: 'Restaurante rodeado de huerta valenciana', googleQuery: 'Restaurante Huerta Tremolar Alzira' },
     { id: 'tr_b1', name: 'Horno El Tremolar',       category: 'panaderia', lat: 39.1502, lng: -0.4215, address: 'C/ del Tremolar, 12', horario: 'L-S 7:00-14:00', googleQuery: 'Horno Tremolar Alzira' },
     { id: 'tr_p1', name: 'Parque El Tremolar',      category: 'parque', lat: 39.1520, lng: -0.4190, address: 'Av. del Tremolar', description: 'Parque con zona de ejercicio al aire libre', googleQuery: 'Parque Tremolar Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA MONASTERIO DE LA MURTA (SO alejado, naturaleza)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'm6', name: 'Monasterio de la Murta',         category: 'monumento', lat: 39.1350, lng: -0.4200, address: 'Paraje de la Murta', description: 'Ruinas del monasterio jerónimo del s.XIV, a 3km del centro', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Monestir_de_la_Murta_%28Alzira%29_-_44.jpg/640px-Monestir_de_la_Murta_%28Alzira%29_-_44.jpg', googleQuery: 'Monasterio de la Murta Alzira' },
     { id: 'mu_p1', name: 'Sendero de la Murta',     category: 'parque', lat: 39.1370, lng: -0.4180, address: 'Paraje de la Murta', description: 'Ruta de senderismo entre naranjos y montaña, 5km', googleQuery: 'Sendero Murta Alzira' },
     { id: 'mu_p2', name: 'Mirador de la Casella',   category: 'parque', lat: 39.1320, lng: -0.4150, address: 'Serra de Corbera', description: 'Vistas panorámicas de Alzira y la Ribera', googleQuery: 'Mirador Casella Alzira' },
     { id: 'mu_m1', name: 'Cruz de la Murta',        category: 'monumento', lat: 39.1340, lng: -0.4170, address: 'Paraje de la Murta', description: 'Cruz de piedra del s.XVI en el camino al monasterio', googleQuery: 'Cruz Murta Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA POLÍGONO INDUSTRIAL SUR (Carretera de Xàtiva)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'pi_s1', name: 'Mercadona Polígono',      category: 'super', lat: 39.1380, lng: -0.4310, address: 'Pol. Ind. Sur, Parcela 12', horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mercadona_Picanya.jpg/640px-Mercadona_Picanya.jpg', googleQuery: 'Mercadona Poligono Alzira' },
     { id: 'pi_r1', name: 'Restaurante El Polígono', category: 'restaurante', lat: 39.1375, lng: -0.4320, address: 'Pol. Ind. Sur', horario: 'L-V 12:00-16:00', description: 'Menú del día económico, popular entre trabajadores', googleQuery: 'Restaurante Poligono Alzira' },
     { id: 'pi_c1', name: 'Cafetería Industrial',    category: 'cafe', lat: 39.1385, lng: -0.4305, address: 'Pol. Ind. Sur', horario: 'L-V 6:30-18:00', googleQuery: 'Cafeteria Poligono Alzira' },
     { id: 'pi_f1', name: 'Farmacia Polígono Sur',   category: 'farmacia', lat: 39.1390, lng: -0.4298, address: 'Pol. Ind. Sur, entrada', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Poligono Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA OESTE LEJANO / CTRA. TAVERNES (hacia Tavernes)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'to_s1', name: 'Lidl Zona Oeste',         category: 'super', lat: 39.1510, lng: -0.4530, address: 'Ctra. Tavernes, km 1', horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lidl_in_Afragola%2C_Italy%2C_2020.jpg/640px-Lidl_in_Afragola%2C_Italy%2C_2020.jpg', googleQuery: 'Lidl Tavernes Alzira' },
     { id: 'to_r1', name: 'Restaurante La Caseta',   category: 'restaurante', lat: 39.1505, lng: -0.4545, address: 'Ctra. Tavernes', horario: 'L-D 13:00-16:00', description: 'Arroces tradicionales en barraca valenciana', googleQuery: 'Restaurante Caseta Alzira' },
     { id: 'to_f1', name: 'Farmacia Ctra. Tavernes', category: 'farmacia', lat: 39.1515, lng: -0.4520, address: 'Ctra. Tavernes, 5', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Tavernes Alzira' },
     { id: 'to_p1', name: 'Huerta del Xúquer',       category: 'parque', lat: 39.1520, lng: -0.4560, address: 'Camino huerta oeste', description: 'Paseo entre naranjos y campos de arroz junto al Xúquer', googleQuery: 'Huerta Xuquer Alzira' },
     { id: 'to_c1', name: 'Bar La Caseta',           category: 'cafe', lat: 39.1508, lng: -0.4540, address: 'Ctra. Tavernes, 2', horario: 'L-D 7:00-20:00', googleQuery: 'Bar Caseta Tavernes Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA NORESTE / CTRA. CORBERA (hacia Corbera de Alzira)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'co_f1', name: 'Farmacia Corbera Rd.',    category: 'farmacia', lat: 39.1620, lng: -0.4215, address: 'Ctra. de Corbera, 12', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Corbera Alzira' },
     { id: 'co_s1', name: 'Consum Ctra. Corbera',    category: 'super', lat: 39.1615, lng: -0.4225, address: 'Ctra. de Corbera, 8', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Corbera Alzira' },
     { id: 'co_r1', name: 'Venta La Corbera',        category: 'restaurante', lat: 39.1632, lng: -0.4200, address: 'Ctra. de Corbera km 3', horario: 'L-D 12:00-17:00', description: 'Venta típica con paellas en leña', googleQuery: 'Venta Corbera Alzira' },
     { id: 'co_p1', name: 'Parque Deportivo Corbera', category: 'parque', lat: 39.1625, lng: -0.4210, address: 'Zona Deportiva, Ctra. Corbera', description: 'Pistas de pádel, tenis y fútbol', googleQuery: 'Zona Deportiva Corbera Alzira' },
     { id: 'co_m1', name: 'Ermita de Sant Bernat',    category: 'monumento', lat: 39.1650, lng: -0.4185, address: 'Serra de Corbera', description: 'Ermita del s.XVI con vistas a todo el valle', googleQuery: 'Ermita Sant Bernat Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA BARRIO SANT AGUSTÍ (antiguo, sureste del centro)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'sa_f1', name: 'Farmacia Sant Agustí',    category: 'farmacia', lat: 39.1472, lng: -0.4310, address: 'C/ Sant Agustí, 15', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Sant Agusti Alzira' },
     { id: 'sa_c1', name: 'Café del Barrio',         category: 'cafe', lat: 39.1468, lng: -0.4318, address: 'C/ Sant Agustí, 22', horario: 'L-D 7:00-21:00', googleQuery: 'Cafe Sant Agusti Alzira' },
     { id: 'sa_r1', name: 'Arrocería Sant Agustí',   category: 'restaurante', lat: 39.1465, lng: -0.4305, address: 'C/ Sant Agustí, 28', horario: 'L-D 13:00-16:00', description: 'Arroz al horno tradicional', googleQuery: 'Arroceria Sant Agusti Alzira' },
     { id: 'sa_m1', name: 'Iglesia de Sant Agustí',  category: 'monumento', lat: 39.1475, lng: -0.4325, address: 'Plaça Sant Agustí', description: 'Iglesia barroca del s.XVII', googleQuery: 'Iglesia Sant Agusti Alzira' },
     { id: 'sa_p1', name: 'Plaza Sant Agustí',       category: 'parque', lat: 39.1478, lng: -0.4320, address: 'Plaça Sant Agustí', description: 'Plaza con fuente y árboles centenarios', googleQuery: 'Plaza Sant Agusti Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA BARRACA D'AIGÜES VIVES (pedanía noreste)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'ba_f1', name: 'Farmacia Aigües Vives',   category: 'farmacia', lat: 39.1680, lng: -0.4180, address: "Camí d'Aigües Vives, 3", horario: 'L-V 9:00-14:00', googleQuery: 'Farmacia Aigues Vives Alzira' },
     { id: 'ba_s1', name: 'Tienda Aigües Vives',     category: 'super', lat: 39.1685, lng: -0.4175, address: "C/ d'Aigües Vives, 10", horario: 'L-S 8:00-14:00, 17:00-20:00', googleQuery: 'Tienda Aigues Vives Alzira' },
     { id: 'ba_c1', name: "Bar d'Aigües Vives",      category: 'cafe', lat: 39.1688, lng: -0.4170, address: "Plaça d'Aigües Vives", horario: 'L-D 7:00-22:00', googleQuery: 'Bar Aigues Vives Alzira' },
     { id: 'ba_r1', name: 'Venta Aigües Vives',      category: 'restaurante', lat: 39.1695, lng: -0.4165, address: "Camí d'Aigües Vives", horario: 'S-D 13:00-16:00', description: 'Paella de leña los domingos', googleQuery: 'Venta Aigues Vives Alzira' },
     { id: 'ba_p1', name: 'Parque Aigües Vives',     category: 'parque', lat: 39.1690, lng: -0.4172, address: 'Zona verde pedanía', description: 'Pequeño parque con frontón y zona infantil', googleQuery: 'Parque Aigues Vives Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ZONA MÁS PUNTOS DE INTERÉS / MONUMENTOS DISPERSOS
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'mx_m1', name: 'Pont de Ferro (Puente de Hierro)', category: 'monumento', lat: 39.1540, lng: -0.4440, address: 'Sobre el río Xúquer, zona norte', description: 'Puente metálico histórico del s.XIX sobre el Xúquer', googleQuery: 'Pont Ferro Alzira' },
     { id: 'mx_m2', name: 'Mercat Municipal',         category: 'monumento', lat: 39.1495, lng: -0.4358, address: 'Plaça del Mercat', description: 'Mercado modernista de principios del s.XX, aún en funcionamiento', googleQuery: 'Mercat Municipal Alzira' },
     { id: 'mx_m3', name: 'Teatro Municipal',         category: 'monumento', lat: 39.1508, lng: -0.4375, address: 'C/ del Teatre', description: 'Teatro histórico restaurado, programación cultural activa', googleQuery: 'Teatro Municipal Alzira' },
     { id: 'mx_m4', name: 'Antiguo Convento de Santa Lucía', category: 'monumento', lat: 39.1488, lng: -0.4395, address: 'C/ Santa Lucía', description: 'Convento del s.XIV, hoy espacio cultural', googleQuery: 'Convento Santa Lucia Alzira' },
     { id: 'mx_m5', name: 'Torre del Agua',           category: 'monumento', lat: 39.1465, lng: -0.4340, address: 'C/ de la Torre', description: 'Torre de vigilancia medieval restaurada', googleQuery: 'Torre Agua Alzira' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  CARCAIXENT (sur de Alzira)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'cx_f1', name: 'Farmacia Central Carcaixent',  category: 'farmacia', lat: 39.1228, lng: -0.4448, address: 'Plaça del Mercat, 5, Carcaixent', horario: 'L-V 9:00-20:30', googleQuery: 'Farmacia Central Carcaixent' },
     { id: 'cx_f2', name: 'Farmacia Calle Mayor',         category: 'farmacia', lat: 39.1215, lng: -0.4462, address: 'C/ Major, 20, Carcaixent', horario: 'L-S 9:00-21:00', googleQuery: 'Farmacia Calle Mayor Carcaixent' },
     { id: 'cx_f3', name: 'Farmacia San Francisco',       category: 'farmacia', lat: 39.1240, lng: -0.4430, address: 'C/ San Francisco, 8, Carcaixent', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia San Francisco Carcaixent' },
@@ -311,10 +205,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'cx_m2', name: 'Casa Consistorial Carcaixent',  category: 'monumento', lat: 39.1228, lng: -0.4455, address: 'Plaça Major, 1, Carcaixent', description: 'Ayuntamiento neoclásico del s.XIX', googleQuery: 'Ayuntamiento Carcaixent' },
     { id: 'cx_m3', name: 'Monasterio de Aguas Vivas',     category: 'monumento', lat: 39.1100, lng: -0.4250, address: 'Paraje Aguas Vivas, Carcaixent', description: 'Monasterio del s.XIII en un valle rodeado de montaña', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Monestir_d%27Aig%C3%BCes_Vives_de_Carcaixent_02.jpg/640px-Monestir_d%27Aig%C3%BCes_Vives_de_Carcaixent_02.jpg', googleQuery: 'Monasterio Aguas Vivas Carcaixent' },
     { id: 'cx_m4', name: 'Ermita del Calvari',            category: 'monumento', lat: 39.1260, lng: -0.4400, address: 'Muntanya del Calvari, Carcaixent', description: 'Ermita con vistas panorámicas a toda la Ribera', googleQuery: 'Ermita Calvari Carcaixent' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  ALGEMESÍ (norte de Alzira)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'ag_f1', name: 'Farmacia Central Algemesí',    category: 'farmacia', lat: 39.1898, lng: -0.4355, address: 'Plaça Major, 4, Algemesí', horario: 'L-V 9:00-20:30', googleQuery: 'Farmacia Central Algemesi' },
     { id: 'ag_f2', name: 'Farmacia Valencia Algemesí',   category: 'farmacia', lat: 39.1885, lng: -0.4340, address: 'C/ Valencia, 22, Algemesí', horario: 'L-S 9:00-21:00', googleQuery: 'Farmacia Valencia Algemesi' },
     { id: 'ag_s1', name: 'Mercadona Algemesí',       category: 'super', lat: 39.1870, lng: -0.4330, address: 'Av. de la Ribera, Algemesí', horario: 'L-S 9:00-21:30', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Mercadona_Picanya.jpg/640px-Mercadona_Picanya.jpg', googleQuery: 'Mercadona Algemesi' },
@@ -328,10 +218,6 @@ const LOCAL_POIS: POI[] = [
     { id: 'ag_p1', name: 'Parc Municipal Algemesí',  category: 'parque', lat: 39.1908, lng: -0.4342, address: 'Centre, Algemesí', description: 'Parque urbano con zona infantil y fuentes', googleQuery: 'Parc Municipal Algemesi' },
     { id: 'ag_m1', name: 'Basílica de Sant Jaume',       category: 'monumento', lat: 39.1897, lng: -0.4350, address: 'Plaça Major, Algemesí', description: 'Basílica gótica, escenario de la Muixeranga (Patrimonio UNESCO)', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Algemesi_Basilica.jpg/440px-Algemesi_Basilica.jpg', googleQuery: 'Basilica Sant Jaume Algemesi' },
     { id: 'ag_m2', name: 'Museu de la Festa',            category: 'monumento', lat: 39.1894, lng: -0.4355, address: 'C/ de la Fira, 5, Algemesí', description: 'Museo dedicado a la Muixeranga, Patrimonio de la Humanidad', googleQuery: 'Museu Festa Algemesi' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  GUADASSUAR (este de Alzira)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'gu_f1', name: 'Farmacia Guadassuar',          category: 'farmacia', lat: 39.1745, lng: -0.4010, address: 'C/ Major, 8, Guadassuar', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Guadassuar' },
     { id: 'gu_s1', name: 'Consum Guadassuar',        category: 'super', lat: 39.1750, lng: -0.4020, address: 'C/ de Valencia, 15, Guadassuar', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Guadassuar' },
     { id: 'gu_h1', name: 'Consultorio Guadassuar',       category: 'salud', lat: 39.1742, lng: -0.4015, address: 'C/ Sant Vicent, 3, Guadassuar', phone: '962 57 00 50', googleQuery: 'Consultorio Guadassuar' },
@@ -340,20 +226,12 @@ const LOCAL_POIS: POI[] = [
     { id: 'gu_b1', name: 'Forn de Pa Guadassuar',    category: 'panaderia', lat: 39.1740, lng: -0.4005, address: 'C/ Major, 12, Guadassuar', horario: 'L-S 7:00-14:00', googleQuery: 'Forn Pa Guadassuar' },
     { id: 'gu_p1', name: 'Parc Municipal Guadassuar', category: 'parque', lat: 39.1752, lng: -0.4000, address: 'Centre, Guadassuar', description: 'Parque con pista deportiva y zona de juegos', googleQuery: 'Parc Guadassuar' },
     { id: 'gu_m1', name: 'Iglesia de Sant Vicent',       category: 'monumento', lat: 39.1746, lng: -0.4012, address: 'Plaça Major, Guadassuar', description: 'Iglesia parroquial del s.XVI', googleQuery: 'Iglesia Sant Vicent Guadassuar' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  BENIMODO (noreste de Alzira)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'bm_f1', name: 'Farmacia Benimodo',            category: 'farmacia', lat: 39.1830, lng: -0.4100, address: 'C/ Major, 3, Benimodo', horario: 'L-V 9:00-14:00', googleQuery: 'Farmacia Benimodo' },
     { id: 'bm_s1', name: 'Tienda Benimodo',          category: 'super', lat: 39.1835, lng: -0.4095, address: 'C/ de la Font, 5, Benimodo', horario: 'L-S 8:00-14:00, 17:00-20:00', googleQuery: 'Tienda Benimodo' },
     { id: 'bm_c1', name: 'Bar La Plaça Benimodo',    category: 'cafe', lat: 39.1828, lng: -0.4105, address: 'Plaça Major, 1, Benimodo', horario: 'L-D 7:00-22:00', googleQuery: 'Bar Plaça Benimodo' },
     { id: 'bm_r1', name: 'Restaurante El Tio Pepe',  category: 'restaurante', lat: 39.1838, lng: -0.4090, address: 'C/ Sant Roc, 8, Benimodo', horario: 'V-D 13:00-16:00', description: 'Cocina casera de pueblo', googleQuery: 'Restaurante Tio Pepe Benimodo' },
     { id: 'bm_p1', name: 'Plaza Mayor Benimodo',     category: 'parque', lat: 39.1832, lng: -0.4098, address: 'Centre, Benimodo', description: 'Plaza del pueblo con fuente y árboles', googleQuery: 'Plaza Mayor Benimodo' },
     { id: 'bm_m1', name: 'Iglesia de Benimodo',          category: 'monumento', lat: 39.1833, lng: -0.4102, address: 'Plaça Major, Benimodo', description: 'Iglesia parroquial del s.XVIII', googleQuery: 'Iglesia Benimodo' },
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  LA POBLA LLARGA (sur, entre Alzira y Xàtiva)
-    // ╚══════════════════════════════════════════════════════════════╝
     { id: 'pl_f1', name: 'Farmacia La Pobla Llarga',     category: 'farmacia', lat: 39.1310, lng: -0.4798, address: 'C/ Major, 10, La Pobla Llarga', horario: 'L-V 9:00-20:00', googleQuery: 'Farmacia Pobla Llarga' },
     { id: 'pl_s1', name: 'Consum La Pobla Llarga',   category: 'super', lat: 39.1315, lng: -0.4790, address: 'Av. del País Valencià, La Pobla Llarga', horario: 'L-S 9:00-21:00', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Consum_Supermercat_Algemesi.jpg/640px-Consum_Supermercat_Algemesi.jpg', googleQuery: 'Consum Pobla Llarga' },
     { id: 'pl_c1', name: 'Bar La Pobla',             category: 'cafe', lat: 39.1305, lng: -0.4802, address: 'Plaça Major, La Pobla Llarga', horario: 'L-D 7:00-21:00', googleQuery: 'Bar Pobla Llarga' },

@@ -1,50 +1,16 @@
-/**
- * HistorialScreen.tsx — Historial completo de eventos del paciente.
- *
- * Funcionalidades:
- * - Lista cronológica de todos los eventos registrados
- * - Filtros por tipo (Llegada, Pastilla, Comida, Paseo, Siesta, Caída)
- * - Búsqueda por texto en descripciones
- * - Agrupación por día con separadores visuales
- * - Indicador de verificado (geofence/OCR) en cada evento
- * - Fotos expandibles al pulsar
- *
- * Integra: localEventStorage (offline-first)
- * ~894 líneas
- */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-    ScrollView,
-    RefreshControl,
-    ActivityIndicator,
-    TouchableOpacity,
-    Image,
-    Animated,
-    Dimensions,
-    Platform,
-    Share,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Image, Dimensions, Platform, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS, CUIDADORA } from '../styles/theme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-interface HistorialScreenProps {
-    abueloId?: number;
-}
+interface HistorialScreenProps { abueloId?: number; }
 
 interface EventoInfo {
-    id: number;
-    tipo: string;
-    timestamp: string;
-    verificado: boolean;
-    descripcion: string;
-    fotoBase64?: string;
-    gpsLat?: number;
-    gpsLng?: number;
+    id: number; tipo: string; timestamp: string;
+    verificado: boolean; descripcion: string;
+    fotoBase64?: string; gpsLat?: number; gpsLng?: number;
 }
-
-// ─── CONFIG ───
 
 const TIPO_CONFIG: Record<string, { color: string; bg: string; label: string; icon: string }> = {
     LLEGADA:  { color: '#2E7D32', bg: '#E8F5E9', label: 'Llegada',     icon: 'log-in' },
@@ -58,8 +24,6 @@ const TIPO_CONFIG: Record<string, { color: string; bg: string; label: string; ic
 };
 
 const ALL_TYPES = ['TODOS', ...Object.keys(TIPO_CONFIG)];
-
-// ─── WEEK HELPERS ───
 
 function getWeekDays(centerDate: Date): Date[] {
     const start = new Date(centerDate);
@@ -77,8 +41,6 @@ function getWeekDays(centerDate: Date): Date[] {
 
 const DAY_NAMES_SHORT = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-// ─── COMPONENT ───
-
 const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
     const { colors } = useTheme();
     const [allEvents, setAllEvents] = useState<EventoInfo[]>([]);
@@ -89,18 +51,14 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
     const [filterType, setFilterType] = useState('TODOS');
     const [expandedId, setExpandedId] = useState<number | null>(null);
 
-    // ─── LOAD DATA ───
-
     const cargarEventos = useCallback(async (date: Date) => {
         try {
             const localEventStorage = require('../services/localEventStorage').default;
             const allEvts = await localEventStorage.getEventos();
             const targetDay = date.toDateString();
-
             const filtered = allEvts.filter((e: any) =>
                 new Date(e.timestamp).toDateString() === targetDay
             );
-
             const mapped: EventoInfo[] = filtered.map((e: any) => ({
                 id: parseInt(e.id) || Date.now(),
                 tipo: e.tipo,
@@ -111,9 +69,7 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                 gpsLat: e.gpsLat,
                 gpsLng: e.gpsLng,
             }));
-
             setAllEvents(mapped);
-
             // Count events per day for the week strip
             const week = getWeekDays(date);
             const counts: Record<string, number> = {};
@@ -140,8 +96,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
         cargarEventos(selectedDate);
     }, [cargarEventos, selectedDate]);
 
-    // ─── NAVIGATION ───
-
     const cambiarDia = (delta: number) => {
         const nueva = new Date(selectedDate);
         nueva.setDate(nueva.getDate() + delta);
@@ -157,8 +111,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
         weekday: 'long', day: 'numeric', month: 'long',
     }), [selectedDate]);
 
-    // ─── FILTERED EVENTS ───
-
     const eventos = useMemo(() => {
         const sorted = [...allEvents].sort(
             (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -167,17 +119,12 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
         return sorted.filter(e => e.tipo === filterType);
     }, [allEvents, filterType]);
 
-    // ─── STATS ───
-
     const stats = useMemo(() => {
         const total = allEvents.length;
         const verificados = allEvents.filter(e => e.verificado).length;
         const alertas = allEvents.filter(e => e.tipo === 'CAIDA' || e.tipo === 'FUGA').length;
-
         // Jornada — first & last event times
-        let jornadaInicio = '';
-        let jornadaFin = '';
-        let duracionMin = 0;
+        let jornadaInicio = '', jornadaFin = '', duracionMin = 0;
         if (allEvents.length >= 1) {
             const sorted = [...allEvents].sort(
                 (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -188,26 +135,21 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
             jornadaFin = last.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             duracionMin = Math.round((last.getTime() - first.getTime()) / 60000);
         }
-
         // Types breakdown
         const byType: Record<string, number> = {};
         allEvents.forEach(e => { byType[e.tipo] = (byType[e.tipo] || 0) + 1; });
-
         return { total, verificados, alertas, jornadaInicio, jornadaFin, duracionMin, byType };
     }, [allEvents]);
 
-    const formatHora = (timestamp: string): string => {
-        return new Date(timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    };
+    const formatHora = (timestamp: string) =>
+        new Date(timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-    const formatDuration = (mins: number): string => {
+    const formatDuration = (mins: number) => {
         if (mins < 60) return `${mins} min`;
         const h = Math.floor(mins / 60);
         const m = mins % 60;
         return m > 0 ? `${h}h ${m}min` : `${h}h`;
     };
-
-    // ─── SHARE ───
 
     const handleShare = async () => {
         const lines = [
@@ -220,16 +162,10 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                 return `${formatHora(e.timestamp)} — ${cfg.label}: ${e.descripcion}${e.verificado ? ' ✓' : ''}`;
             }),
         ].filter(Boolean);
-        try {
-            await Share.share({ message: lines.join('\n') });
-        } catch { }
+        try { await Share.share({ message: lines.join('\n') }); } catch { }
     };
 
-    // ─── WEEK STRIP ───
-
     const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
-
-    // ─── RENDER ───
 
     if (loading && allEvents.length === 0) {
         return (
@@ -242,7 +178,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
 
     return (
         <View style={[s.container, { backgroundColor: colors.background }]}>
-            {/* ── HEADER ── */}
             <View style={[s.header, { backgroundColor: colors.headerBg }]}>
                 <View style={s.headerTop}>
                     <View>
@@ -255,7 +190,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                 </View>
             </View>
 
-            {/* ── WEEK STRIP ── */}
             <View style={[s.weekStrip, { backgroundColor: colors.card }]}>
                 <TouchableOpacity onPress={() => cambiarDia(-7)} style={s.weekArrow}>
                     <Ionicons name="chevron-back" size={18} color={colors.primary} />
@@ -266,7 +200,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                     const isToday = dayStr === new Date().toDateString();
                     const count = weekEventCounts[dayStr] || 0;
                     const isFuture = d > new Date();
-
                     return (
                         <TouchableOpacity
                             key={i}
@@ -317,7 +250,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                 </TouchableOpacity>
             </View>
 
-            {/* ── DATE LABEL ── */}
             <View style={s.dateLabelRow}>
                 <Text style={[s.dateLabel, { color: colors.text }]}>{fecha}</Text>
                 {isHoy && (
@@ -332,7 +264,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
                 contentContainerStyle={{ paddingBottom: 24 }}
             >
-                {/* ── JORNADA SUMMARY ── */}
                 {stats.total > 0 && (
                     <View style={[s.jornadaCard, { backgroundColor: colors.card }]}>
                         <View style={s.jornadaRow}>
@@ -354,8 +285,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                                 <Text style={[s.jornadaLabel, { color: colors.textSecondary }]}>Fin</Text>
                             </View>
                         </View>
-
-                        {/* Type breakdown mini-pills */}
                         <View style={s.breakdownRow}>
                             {Object.entries(stats.byType).map(([tipo, count]) => {
                                 const cfg = TIPO_CONFIG[tipo] || TIPO_CONFIG.LLEGADA;
@@ -370,7 +299,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                     </View>
                 )}
 
-                {/* ── STATS ROW ── */}
                 <View style={s.statsRow}>
                     <View style={[s.statCard, { backgroundColor: colors.card }]}>
                         <Ionicons name="layers-outline" size={20} color={colors.primary} />
@@ -389,14 +317,12 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                     </View>
                 </View>
 
-                {/* ── FILTER CHIPS ── */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={s.filterContainer}>
                     {ALL_TYPES.map(t => {
                         const isActive = filterType === t;
                         const cfg = TIPO_CONFIG[t];
                         const chipColor = isActive ? (cfg?.color || colors.primary) : colors.textLight;
                         const chipBg = isActive ? (cfg?.bg || colors.primary + '18') : colors.card;
-
                         return (
                             <TouchableOpacity
                                 key={t}
@@ -418,7 +344,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                     })}
                 </ScrollView>
 
-                {/* ── TIMELINE ── */}
                 <View style={s.timelineSection}>
                     {eventos.length === 0 ? (
                         <View style={s.emptyState}>
@@ -437,18 +362,14 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                             const config = TIPO_CONFIG[evento.tipo] || TIPO_CONFIG.LLEGADA;
                             const isLast = index === eventos.length - 1;
                             const isExpanded = expandedId === evento.id;
-
                             return (
                                 <View key={evento.id} style={s.timelineItem}>
-                                    {/* Timeline line */}
                                     <View style={s.timelineLine}>
                                         <View style={[s.timelineDot, { backgroundColor: config.color }]}>
                                             <Ionicons name={config.icon as any} size={16} color="#FFF" />
                                         </View>
                                         {!isLast && <View style={[s.timelineConnector, { backgroundColor: colors.border }]} />}
                                     </View>
-
-                                    {/* Event Card */}
                                     <TouchableOpacity
                                         style={[s.eventCard, { backgroundColor: colors.card }]}
                                         onPress={() => setExpandedId(isExpanded ? null : evento.id)}
@@ -468,10 +389,7 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                                                 />
                                             </View>
                                         </View>
-
                                         <Text style={[s.eventDescription, { color: colors.text }]}>{evento.descripcion}</Text>
-
-                                        {/* Badges row */}
                                         <View style={s.badgesRow}>
                                             {evento.verificado && (
                                                 <View style={[s.badge, { backgroundColor: CUIDADORA.light }]}>
@@ -498,8 +416,6 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
                                                 </View>
                                             )}
                                         </View>
-
-                                        {/* Expanded details */}
                                         {isExpanded && (
                                             <View style={[s.expandedSection, { borderTopColor: colors.border }]}>
                                                 {evento.fotoBase64 && (
@@ -536,368 +452,129 @@ const HistorialScreen: React.FC<HistorialScreenProps> = ({ abueloId = 1 }) => {
     );
 };
 
-// ─── STYLES ───
-
 const s = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    loadingContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    loadingText: {
-        marginTop: SPACING.md,
-        fontSize: 15,
-    },
-
-    // ── Header
+    container: { flex: 1 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    loadingText: { marginTop: SPACING.md, fontSize: 15 },
     header: {
-        paddingHorizontal: SPACING.lg,
-        paddingTop: 60,
-        paddingBottom: 20,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
+        paddingHorizontal: SPACING.lg, paddingTop: 60, paddingBottom: 20,
+        borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
     },
-    headerTop: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#FFF',
-    },
-    headerSubtitle: {
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.8)',
-        marginTop: 2,
-    },
+    headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#FFF' },
+    headerSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
     shareBtn: {
-        backgroundColor: 'rgba(255,255,255,0.25)',
-        width: 40,
-        height: 40,
-        borderRadius: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.25)', width: 40, height: 40,
+        borderRadius: 14, alignItems: 'center', justifyContent: 'center',
     },
-
-    // ── Week Strip
     weekStrip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 4,
-        marginHorizontal: SPACING.lg,
-        marginTop: -12,
-        borderRadius: 18,
-        ...SHADOWS.small,
+        flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 4,
+        marginHorizontal: SPACING.lg, marginTop: -12, borderRadius: 18, ...SHADOWS.small,
     },
-    weekArrow: {
-        padding: 4,
-    },
+    weekArrow: { padding: 4 },
     weekDay: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 6,
-        borderRadius: 14,
-        marginHorizontal: 1,
+        flex: 1, alignItems: 'center', paddingVertical: 6,
+        borderRadius: 14, marginHorizontal: 1,
     },
-    weekDayName: {
-        fontSize: 10,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-    },
-    weekDayNum: {
-        fontSize: 16,
-        fontWeight: '700',
-        marginTop: 2,
-    },
+    weekDayName: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+    weekDayNum: { fontSize: 16, fontWeight: '700', marginTop: 2 },
     weekDot: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 3,
+        width: 16, height: 16, borderRadius: 8,
+        alignItems: 'center', justifyContent: 'center', marginTop: 3,
     },
-    weekDotText: {
-        fontSize: 9,
-        fontWeight: '800',
-    },
-
-    // ── Date label
+    weekDotText: { fontSize: 9, fontWeight: '800' },
     dateLabelRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: SPACING.lg,
-        paddingTop: 14,
-        paddingBottom: 4,
-        gap: 8,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg,
+        paddingTop: 14, paddingBottom: 4, gap: 8,
     },
-    dateLabel: {
-        fontSize: 15,
-        fontWeight: '600',
-        textTransform: 'capitalize',
-    },
-    hoyBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 8,
-    },
-    hoyText: {
-        fontSize: 11,
-        fontWeight: '700',
-        color: '#FFF',
-    },
-
-    // ── Jornada summary
+    dateLabel: { fontSize: 15, fontWeight: '600', textTransform: 'capitalize' },
+    hoyBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+    hoyText: { fontSize: 11, fontWeight: '700', color: '#FFF' },
     jornadaCard: {
-        marginHorizontal: SPACING.lg,
-        marginTop: 8,
-        borderRadius: 16,
-        padding: SPACING.md,
-        ...SHADOWS.small,
+        marginHorizontal: SPACING.lg, marginTop: 8,
+        borderRadius: 16, padding: SPACING.md, ...SHADOWS.small,
     },
-    jornadaRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-    },
-    jornadaItem: {
-        alignItems: 'center',
-        gap: 3,
-    },
-    jornadaTime: {
-        fontSize: 17,
-        fontWeight: '800',
-    },
-    jornadaLabel: {
-        fontSize: 11,
-        fontWeight: '600',
-    },
-    jornadaDivider: {
-        width: 1,
-        height: 36,
-    },
+    jornadaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
+    jornadaItem: { alignItems: 'center', gap: 3 },
+    jornadaTime: { fontSize: 17, fontWeight: '800' },
+    jornadaLabel: { fontSize: 11, fontWeight: '600' },
+    jornadaDivider: { width: 1, height: 36 },
     breakdownRow: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-        marginTop: 12,
-        flexWrap: 'wrap',
+        flexDirection: 'row', justifyContent: 'center',
+        gap: 8, marginTop: 12, flexWrap: 'wrap',
     },
     breakdownPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 10,
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10,
     },
-    breakdownText: {
-        fontSize: 12,
-        fontWeight: '700',
-    },
-
-    // ── Stats
+    breakdownText: { fontSize: 12, fontWeight: '700' },
     statsRow: {
-        flexDirection: 'row',
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.sm,
-        gap: SPACING.sm,
+        flexDirection: 'row', paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.sm, gap: SPACING.sm,
     },
     statCard: {
-        flex: 1,
-        borderRadius: 14,
-        padding: SPACING.md,
-        alignItems: 'center',
-        gap: 4,
-        ...SHADOWS.small,
+        flex: 1, borderRadius: 14, padding: SPACING.md,
+        alignItems: 'center', gap: 4, ...SHADOWS.small,
     },
-    statValue: {
-        fontSize: 22,
-        fontWeight: '800',
-    },
-    statLabel: {
-        fontSize: 10,
-        fontWeight: '600',
-    },
-
-    // ── Filter chips
-    filterScroll: {
-        maxHeight: 44,
-        marginBottom: 4,
-    },
-    filterContainer: {
-        paddingHorizontal: SPACING.lg,
-        gap: 8,
-        alignItems: 'center',
-    },
+    statValue: { fontSize: 22, fontWeight: '800' },
+    statLabel: { fontSize: 10, fontWeight: '600' },
+    filterScroll: { maxHeight: 44, marginBottom: 4 },
+    filterContainer: { paddingHorizontal: SPACING.lg, gap: 8, alignItems: 'center' },
     filterChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 7,
-        borderRadius: 12,
-        gap: 5,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
+        paddingVertical: 7, borderRadius: 12, gap: 5,
     },
-    filterChipText: {
-        fontSize: 12,
-    },
+    filterChipText: { fontSize: 12 },
     filterCount: {
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 18, height: 18, borderRadius: 9,
+        alignItems: 'center', justifyContent: 'center',
     },
-    filterCountText: {
-        fontSize: 9,
-        fontWeight: '800',
-    },
-
-    // ── Timeline
-    timelineSection: {
-        paddingHorizontal: SPACING.lg,
-        paddingTop: SPACING.sm,
-    },
-    timelineItem: {
-        flexDirection: 'row',
-        marginBottom: 0,
-    },
-    timelineLine: {
-        width: 40,
-        alignItems: 'center',
-    },
+    filterCountText: { fontSize: 9, fontWeight: '800' },
+    timelineSection: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.sm },
+    timelineItem: { flexDirection: 'row', marginBottom: 0 },
+    timelineLine: { width: 40, alignItems: 'center' },
     timelineDot: {
-        width: 34,
-        height: 34,
-        borderRadius: 17,
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1,
+        width: 34, height: 34, borderRadius: 17,
+        alignItems: 'center', justifyContent: 'center', zIndex: 1,
     },
-    timelineConnector: {
-        width: 2,
-        flex: 1,
-        marginVertical: -2,
-    },
-
-    // ── Event card
+    timelineConnector: { width: 2, flex: 1, marginVertical: -2 },
     eventCard: {
-        flex: 1,
-        borderRadius: 16,
-        padding: 14,
-        marginLeft: SPACING.sm,
-        marginBottom: SPACING.sm,
-        ...SHADOWS.small,
+        flex: 1, borderRadius: 16, padding: 14,
+        marginLeft: SPACING.sm, marginBottom: SPACING.sm, ...SHADOWS.small,
     },
     eventHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 8,
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', marginBottom: 8,
     },
     eventTypeBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 10,
-        gap: 4,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10,
+        paddingVertical: 4, borderRadius: 10, gap: 4,
     },
-    eventTypeText: {
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    eventTimeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    eventTime: {
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    eventDescription: {
-        fontSize: 14,
-        lineHeight: 20,
-        letterSpacing: 0.1,
-    },
-
-    // ── Badges
-    badgesRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 6,
-        marginTop: 8,
-    },
+    eventTypeText: { fontSize: 12, fontWeight: '700' },
+    eventTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    eventTime: { fontSize: 13, fontWeight: '600' },
+    eventDescription: { fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
+    badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
     badge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 8,
-        gap: 4,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8,
+        paddingVertical: 3, borderRadius: 8, gap: 4,
     },
-    badgeText: {
-        fontSize: 11,
-        fontWeight: '700',
-    },
-
-    // ── Expanded details
-    expandedSection: {
-        marginTop: 12,
-        paddingTop: 12,
-        borderTopWidth: 1,
-    },
-    eventPhoto: {
-        width: '100%',
-        height: 180,
-        borderRadius: 12,
-        marginBottom: 10,
-    },
+    badgeText: { fontSize: 11, fontWeight: '700' },
+    expandedSection: { marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
+    eventPhoto: { width: '100%', height: 180, borderRadius: 12, marginBottom: 10 },
     gpsCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-        borderRadius: 10,
-        marginBottom: 8,
+        flexDirection: 'row', alignItems: 'center',
+        padding: 10, borderRadius: 10, marginBottom: 8,
     },
-    gpsLabel: {
-        fontSize: 11,
-        fontWeight: '600',
-    },
+    gpsLabel: { fontSize: 11, fontWeight: '600' },
     gpsCoords: {
-        fontSize: 13,
-        fontWeight: '700',
+        fontSize: 13, fontWeight: '700',
         fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     },
-    expandedTimestamp: {
-        fontSize: 11,
-        fontWeight: '500',
-        marginTop: 4,
-    },
-
-    // ── Empty state
-    emptyState: {
-        alignItems: 'center',
-        paddingVertical: 40,
-        gap: 8,
-    },
-    emptyTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-    },
-    emptyText: {
-        fontSize: 14,
-        textAlign: 'center',
-        paddingHorizontal: 20,
-        lineHeight: 20,
-    },
+    expandedTimestamp: { fontSize: 11, fontWeight: '500', marginTop: 4 },
+    emptyState: { alignItems: 'center', paddingVertical: 40, gap: 8 },
+    emptyTitle: { fontSize: 18, fontWeight: '600' },
+    emptyText: { fontSize: 14, textAlign: 'center', paddingHorizontal: 20, lineHeight: 20 },
 });
 
 export default React.memo(HistorialScreen);

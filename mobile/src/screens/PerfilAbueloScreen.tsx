@@ -1,29 +1,7 @@
-/**
- * PerfilAbueloScreen.tsx — Perfil completo del paciente.
- *
- * Muestra y permite editar:
- * - Foto de perfil (cámara o galería)
- * - Datos personales: nombre, dirección, teléfono emergencia
- * - Notas médicas: medicación, alergias, instrucciones
- * - Coordenadas GPS del domicilio
- * - Información del familiar vinculado
- *
- * Integra: eventosService (getPerfilAbuelo), fotoService
- * ~1196 líneas
- */
 import React, { useState, useEffect, useCallback } from 'react';
-    ScrollView,
-    TouchableOpacity,
-    Linking,
-    Alert,
-    ActivityIndicator,
-    TextInput,
-    Keyboard,
-    Switch,
-    Image,
-    Modal,
-    Dimensions,
-    Platform,
+import {
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert,
+    ActivityIndicator, TextInput, Keyboard, Switch, Image, Modal, Dimensions, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -32,51 +10,21 @@ import { COLORS, SPACING, SHADOWS, CUIDADORA } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 import eventosService from '../services/eventosService';
 
-// ─── TYPES ───
-interface PerfilAbueloScreenProps {
-    abueloId?: number;
-    onLogout: () => void;
-}
-
+interface PerfilAbueloScreenProps { abueloId?: number; onLogout: () => void; }
 interface PerfilData {
-    nombre: string;
-    edad: number;
-    direccion: string;
-    telefonoEmergencia: string;
-    contactoNombre: string;
-    notasMedicas: string;
-    domicilioLat: number;
-    domicilioLng: number;
-    diagnostico: string;
-    fechaDiagnostico: string;
-    faseAlzheimer: string;
-    medicamentos: MedicamentoInfo[];
-    alergias: string[];
-    grupoSanguineo: string;
-    pesoKg: number;
-    alturaCm: number;
-    condicionesSecundarias: string[];
-    ultimaVisitaMedica: string;
-    proximaCita: string;
-    medico: string;
-    centroSalud: string;
-    telefonoMedico: string;
-    observaciones: string;
+    nombre: string; edad: number; direccion: string; telefonoEmergencia: string;
+    contactoNombre: string; notasMedicas: string; domicilioLat: number; domicilioLng: number;
+    diagnostico: string; fechaDiagnostico: string; faseAlzheimer: string;
+    medicamentos: MedicamentoInfo[]; alergias: string[]; grupoSanguineo: string;
+    pesoKg: number; alturaCm: number; condicionesSecundarias: string[];
+    ultimaVisitaMedica: string; proximaCita: string; medico: string;
+    centroSalud: string; telefonoMedico: string; observaciones: string;
 }
+interface MedicamentoInfo { nombre: string; dosis: string; frecuencia: string; horarios: string[]; notas: string; }
 
-interface MedicamentoInfo {
-    nombre: string;
-    dosis: string;
-    frecuencia: string;
-    horarios: string[];
-    notas: string;
-}
-
-// ─── ACCENT MAP PER MEDICATION ───
 const MED_ACCENTS = ['#2196F3', '#7C4DFF', '#00BFA5'];
 const { width: SCREEN_W } = Dimensions.get('window');
 
-// ─── COMPONENT ───
 const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, onLogout }) => {
     const { isDark, toggleDarkMode, colors } = useTheme();
     const [perfil, setPerfil] = useState<PerfilData | null>(null);
@@ -87,7 +35,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
     const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
     const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
-    // ─── LOAD PROFILE ───
     useEffect(() => {
         cargarPerfil();
         AsyncStorage.getItem('profile_photo_abuelo').then(uri => { if (uri) setProfilePhoto(uri); }).catch(() => {});
@@ -110,8 +57,7 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                 ],
                 alergias: ['Penicilina', 'Frutos secos'],
                 grupoSanguineo: 'A+',
-                pesoKg: 62,
-                alturaCm: 158,
+                pesoKg: 62, alturaCm: 158,
                 condicionesSecundarias: ['Hipertensión arterial (controlada)', 'Osteoporosis leve', 'Hipoacusia bilateral'],
                 ultimaVisitaMedica: '15 enero 2026',
                 proximaCita: '10 marzo 2026',
@@ -122,14 +68,12 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
             });
         } catch {
             setPerfil({
-                nombre: 'Carmen Ruiz',
-                edad: 82,
+                nombre: 'Carmen Ruiz', edad: 82,
                 direccion: 'C/Colmenar 59, Alzira',
                 telefonoEmergencia: '961234567',
                 contactoNombre: 'Laura Ruiz (hija)',
                 notasMedicas: 'Sinemet 10mg - 10:30h y 18:30h\nAricept 5mg - mañanas',
-                domicilioLat: 39.1512,
-                domicilioLng: -0.4323,
+                domicilioLat: 39.1512, domicilioLng: -0.4323,
                 diagnostico: 'Enfermedad de Alzheimer',
                 fechaDiagnostico: 'Marzo 2021',
                 faseAlzheimer: 'Fase 4 - Moderada',
@@ -140,8 +84,7 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                 ],
                 alergias: ['Penicilina', 'Frutos secos'],
                 grupoSanguineo: 'A+',
-                pesoKg: 62,
-                alturaCm: 158,
+                pesoKg: 62, alturaCm: 158,
                 condicionesSecundarias: ['Hipertensión arterial (controlada)', 'Osteoporosis leve', 'Hipoacusia bilateral'],
                 ultimaVisitaMedica: '15 enero 2026',
                 proximaCita: '10 marzo 2026',
@@ -155,7 +98,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
         }
     };
 
-    // ─── ACTIONS ───
     const llamarEmergencia = useCallback(() => {
         if (!perfil?.telefonoEmergencia) return;
         Alert.alert('Llamar a Emergencia', `Llamar al ${perfil.contactoNombre}\n${perfil.telefonoEmergencia}`, [
@@ -237,7 +179,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
         ]);
     };
 
-    // ─── LOADING ───
     if (loading) {
         return (
             <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -251,7 +192,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
     const initials = perfil.nombre.split(' ').map(n => n[0]).join('');
     const imc = (perfil.pesoKg / ((perfil.alturaCm / 100) ** 2)).toFixed(1);
 
-    // ─── RENDER ───
     return (
         <View style={[styles.root, { backgroundColor: colors.background }]}>
             <ScrollView
@@ -261,19 +201,14 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                 keyboardShouldPersistTaps="handled"
                 onScrollBeginDrag={Keyboard.dismiss}
             >
-                {/* ════════════ HEADER ════════════ */}
                 <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-                    {/* Decorative circles */}
                     <View style={[styles.headerCircle1, { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
                     <View style={[styles.headerCircle2, { backgroundColor: 'rgba(255,255,255,0.04)' }]} />
-
                     <View style={styles.headerTop}>
                         <View style={{ width: 40 }} />
                         <Text style={styles.headerTitle}>Perfil del paciente</Text>
                         <View style={{ width: 40 }} />
                     </View>
-
-                    {/* Avatar */}
                     <TouchableOpacity
                         onPress={() => profilePhoto ? setPreviewPhoto(profilePhoto) : cambiarFotoPerfil()}
                         onLongPress={cambiarFotoPerfil}
@@ -295,12 +230,10 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                         </View>
                         <View style={styles.onlineDot} />
                     </TouchableOpacity>
-
                     <Text style={styles.patientName}>{perfil.nombre}</Text>
                     <Text style={styles.patientMeta}>{perfil.edad} años  •  {perfil.direccion}</Text>
                 </View>
 
-                {/* ════════════ QUICK STATS FLOATING CARD ════════════ */}
                 <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
                     <StatItem icon="water" color="#E53935" label="Grupo" value={perfil.grupoSanguineo} colors={colors} />
                     <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
@@ -311,7 +244,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     <StatItem icon="analytics" color="#8E24AA" label="IMC" value={imc} colors={colors} />
                 </View>
 
-                {/* ════════════ DIAGNOSIS ════════════ */}
                 <SectionHeader icon="medkit" title="Diagnóstico" colors={colors} />
                 <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <View style={[styles.diagAccent, { backgroundColor: colors.warning }]} />
@@ -328,7 +260,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     </View>
                 </View>
 
-                {/* ════════════ MEDICATIONS ════════════ */}
                 <SectionHeader icon="medical" title="Medicación activa" colors={colors} count={perfil.medicamentos.length} />
                 {perfil.medicamentos.map((med, i) => {
                     const accent = MED_ACCENTS[i % MED_ACCENTS.length];
@@ -362,7 +293,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     );
                 })}
 
-                {/* ════════════ ALLERGIES ════════════ */}
                 <SectionHeader icon="warning" title="Alergias" colors={colors} />
                 <View style={[styles.card, styles.allergyCard, { backgroundColor: colors.card }]}>
                     {perfil.alergias.map((a, i) => (
@@ -373,7 +303,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     ))}
                 </View>
 
-                {/* ════════════ EXPAND DETAILS ════════════ */}
                 <TouchableOpacity
                     style={[styles.expandBtn, { backgroundColor: colors.card }]}
                     onPress={() => setShowMedicalDetails(!showMedicalDetails)}
@@ -387,7 +316,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
 
                 {showMedicalDetails && (
                     <View style={[styles.expandedBlock, { backgroundColor: colors.card }]}>
-                        {/* Secondary conditions */}
                         <Text style={[styles.subSectionTitle, { color: colors.text }]}>Condiciones secundarias</Text>
                         {perfil.condicionesSecundarias.map((c, i) => (
                             <View key={i} style={styles.conditionRow}>
@@ -395,8 +323,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                                 <Text style={[styles.conditionText, { color: colors.text }]}>{c}</Text>
                             </View>
                         ))}
-
-                        {/* Doctor */}
                         <Text style={[styles.subSectionTitle, { color: colors.text, marginTop: 20 }]}>Médico responsable</Text>
                         <View style={[styles.doctorRow, { backgroundColor: isDark ? colors.surface : colors.background }]}>
                             <View style={[styles.doctorAvatar, { backgroundColor: colors.infoBg }]}>
@@ -410,8 +336,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                                 <Ionicons name="call" size={16} color="#fff" />
                             </TouchableOpacity>
                         </View>
-
-                        {/* Visits */}
                         <Text style={[styles.subSectionTitle, { color: colors.text, marginTop: 20 }]}>Seguimiento médico</Text>
                         <View style={styles.visitPair}>
                             <View style={[styles.visitBox, { backgroundColor: isDark ? colors.surface : colors.background }]}>
@@ -425,8 +349,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                                 <Text style={[styles.visitDate, { color: colors.primary }]}>{perfil.proximaCita}</Text>
                             </View>
                         </View>
-
-                        {/* Observations */}
                         <View style={styles.editableBlock}>
                             <View style={styles.editableHeader}>
                                 <Text style={[styles.subSectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>Observaciones</Text>
@@ -461,8 +383,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                                 </Text>
                             )}
                         </View>
-
-                        {/* Medical notes */}
                         <View style={styles.editableBlock}>
                             <View style={styles.editableHeader}>
                                 <Text style={[styles.subSectionTitle, { color: colors.text, marginTop: 0, marginBottom: 0 }]}>Notas adicionales</Text>
@@ -500,7 +420,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     </View>
                 )}
 
-                {/* ════════════ SETTINGS ════════════ */}
                 <SectionHeader icon="settings" title="Ajustes" colors={colors} />
                 <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <View style={styles.settingRow}>
@@ -519,10 +438,7 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     </View>
                 </View>
 
-                {/* ════════════ EMERGENCY CONTACTS ════════════ */}
                 <SectionHeader icon="call" title="Contactos de emergencia" colors={colors} />
-
-                {/* Family contact */}
                 <TouchableOpacity
                     style={[styles.contactRow, { backgroundColor: colors.card }]}
                     onPress={llamarEmergencia}
@@ -539,8 +455,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                         <Ionicons name="call" size={16} color="#fff" />
                     </View>
                 </TouchableOpacity>
-
-                {/* Doctor contact */}
                 <TouchableOpacity
                     style={[styles.contactRow, { backgroundColor: colors.card, marginTop: 8 }]}
                     onPress={llamarMedico}
@@ -557,8 +471,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                         <Ionicons name="call" size={16} color="#fff" />
                     </View>
                 </TouchableOpacity>
-
-                {/* 112 SOS */}
                 <TouchableOpacity
                     style={[styles.contactRow, { backgroundColor: colors.card, marginTop: 8 }]}
                     onPress={llamar112}
@@ -576,7 +488,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     </View>
                 </TouchableOpacity>
 
-                {/* ════════════ LOGOUT ════════════ */}
                 <TouchableOpacity
                     style={[styles.logoutBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
                     onPress={() => Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
@@ -588,11 +499,9 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
                     <Ionicons name="log-out-outline" size={20} color={colors.danger} />
                     <Text style={[styles.logoutText, { color: colors.danger }]}>Cerrar sesión</Text>
                 </TouchableOpacity>
-
                 <View style={{ height: 32 }} />
             </ScrollView>
 
-            {/* ════════════ PHOTO PREVIEW MODAL ════════════ */}
             <Modal visible={!!previewPhoto} transparent animationType="fade">
                 <View style={styles.previewOverlay}>
                     <TouchableOpacity style={styles.previewClose} onPress={() => setPreviewPhoto(null)}>
@@ -607,7 +516,6 @@ const PerfilAbueloScreen: React.FC<PerfilAbueloScreenProps> = ({ abueloId = 1, o
     );
 };
 
-// ─── REUSABLE COMPONENTS ───
 const SectionHeader = ({ icon, title, colors, count }: { icon: string; title: string; colors: any; count?: number }) => (
     <View style={styles.sectionHeader}>
         <Ionicons name={icon as any} size={18} color={colors.primary} />
@@ -628,577 +536,186 @@ const StatItem = ({ icon, color, label, value, colors }: { icon: string; color: 
     </View>
 );
 
-// ─── STYLES ───
 const styles = StyleSheet.create({
-    root: {
-        flex: 1,
-    },
-    scroll: {
-        flex: 1,
-    },
-    scrollContent: {
-        paddingBottom: 20,
-    },
-    loadingContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    loadingText: {
-        marginTop: 12,
-        fontSize: 15,
-    },
-
-    /* ─── HEADER ─── */
+    root: { flex: 1 },
+    scroll: { flex: 1 },
+    scrollContent: { paddingBottom: 20 },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    loadingText: { marginTop: 12, fontSize: 15 },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 48,
-        paddingBottom: 36,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
-        alignItems: 'center',
-        overflow: 'hidden',
+        paddingTop: Platform.OS === 'ios' ? 60 : 48, paddingBottom: 36,
+        borderBottomLeftRadius: 32, borderBottomRightRadius: 32,
+        alignItems: 'center', overflow: 'hidden',
     },
     headerCircle1: {
-        position: 'absolute',
-        width: 220,
-        height: 220,
-        borderRadius: 110,
-        top: -60,
-        right: -40,
+        position: 'absolute', width: 220, height: 220, borderRadius: 110, top: -60, right: -40,
     },
     headerCircle2: {
-        position: 'absolute',
-        width: 160,
-        height: 160,
-        borderRadius: 80,
-        bottom: -30,
-        left: -30,
+        position: 'absolute', width: 160, height: 160, borderRadius: 80, bottom: -30, left: -30,
     },
     headerTop: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        paddingHorizontal: 20,
-        marginBottom: 20,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        width: '100%', paddingHorizontal: 20, marginBottom: 20,
     },
     headerTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: 'rgba(255,255,255,0.9)',
-        letterSpacing: 0.5,
+        fontSize: 16, fontWeight: '600', color: 'rgba(255,255,255,0.9)', letterSpacing: 0.5,
     },
-    avatarWrapper: {
-        position: 'relative',
-        marginBottom: 14,
-    },
+    avatarWrapper: { position: 'relative', marginBottom: 14 },
     avatarRing: {
-        width: 106,
-        height: 106,
-        borderRadius: 53,
-        borderWidth: 3,
-        borderColor: 'rgba(255,255,255,0.35)',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 106, height: 106, borderRadius: 53, borderWidth: 3,
+        borderColor: 'rgba(255,255,255,0.35)', alignItems: 'center', justifyContent: 'center',
     },
     avatar: {
-        width: 94,
-        height: 94,
-        borderRadius: 47,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
+        width: 94, height: 94, borderRadius: 47, backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     },
-    avatarImage: {
-        width: 94,
-        height: 94,
-        borderRadius: 47,
-    },
-    avatarInitials: {
-        fontSize: 34,
-        fontWeight: '700',
-        color: '#fff',
-    },
+    avatarImage: { width: 94, height: 94, borderRadius: 47 },
+    avatarInitials: { fontSize: 34, fontWeight: '700', color: '#fff' },
     cameraBadge: {
-        position: 'absolute',
-        bottom: 4,
-        right: 4,
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#1565C0',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2.5,
-        borderColor: '#fff',
+        position: 'absolute', bottom: 4, right: 4, width: 28, height: 28, borderRadius: 14,
+        backgroundColor: '#1565C0', alignItems: 'center', justifyContent: 'center',
+        borderWidth: 2.5, borderColor: '#fff',
     },
     onlineDot: {
-        position: 'absolute',
-        top: 6,
-        right: 10,
-        width: 14,
-        height: 14,
-        borderRadius: 7,
-        backgroundColor: '#66BB6A',
-        borderWidth: 2.5,
-        borderColor: '#fff',
+        position: 'absolute', top: 6, right: 10, width: 14, height: 14, borderRadius: 7,
+        backgroundColor: '#66BB6A', borderWidth: 2.5, borderColor: '#fff',
     },
-    patientName: {
-        fontSize: 26,
-        fontWeight: '800',
-        color: '#fff',
-        letterSpacing: 0.3,
-    },
-    patientMeta: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.75)',
-        marginTop: 4,
-    },
-
-    /* ─── STATS CARD ─── */
+    patientName: { fontSize: 26, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+    patientMeta: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
     statsCard: {
-        flexDirection: 'row',
-        marginHorizontal: 20,
-        marginTop: -22,
-        borderRadius: 18,
-        paddingVertical: 14,
-        paddingHorizontal: 8,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 6,
+        flexDirection: 'row', marginHorizontal: 20, marginTop: -22, borderRadius: 18,
+        paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08, shadowRadius: 12, elevation: 6,
     },
-    statItem: {
-        flex: 1,
-        alignItems: 'center',
-        gap: 2,
-    },
-    statValue: {
-        fontSize: 16,
-        fontWeight: '700',
-        marginTop: 2,
-    },
-    statLabel: {
-        fontSize: 11,
-        fontWeight: '500',
-    },
-    statDivider: {
-        width: 1,
-        height: 32,
-    },
-
-    /* ─── SECTION HEADER ─── */
+    statItem: { flex: 1, alignItems: 'center', gap: 2 },
+    statValue: { fontSize: 16, fontWeight: '700', marginTop: 2 },
+    statLabel: { fontSize: 11, fontWeight: '500' },
+    statDivider: { width: 1, height: 32 },
     sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        marginTop: 24,
-        marginBottom: 10,
-        gap: 8,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
+        marginTop: 24, marginBottom: 10, gap: 8,
     },
-    sectionTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-        flex: 1,
-        letterSpacing: 0.2,
-    },
-    countBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 10,
-    },
-    countBadgeText: {
-        fontSize: 12,
-        fontWeight: '700',
-    },
-
-    /* ─── GENERIC CARD ─── */
+    sectionTitle: { fontSize: 17, fontWeight: '700', flex: 1, letterSpacing: 0.2 },
+    countBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+    countBadgeText: { fontSize: 12, fontWeight: '700' },
     card: {
-        marginHorizontal: 20,
-        borderRadius: 16,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        marginHorizontal: 20, borderRadius: 16, padding: 16,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
-
-    /* ─── DIAGNOSIS ─── */
     diagAccent: {
-        position: 'absolute',
-        left: 0,
-        top: 12,
-        bottom: 12,
-        width: 4,
-        borderRadius: 2,
+        position: 'absolute', left: 0, top: 12, bottom: 12, width: 4, borderRadius: 2,
     },
-    diagBody: {
-        paddingLeft: 8,
-    },
+    diagBody: { paddingLeft: 8 },
     diagBadge: {
-        flexDirection: 'row',
-        alignSelf: 'flex-start',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 8,
-        marginBottom: 8,
+        flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center',
+        paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, marginBottom: 8,
     },
-    diagBadgeText: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    diagTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    diagMeta: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        marginTop: 6,
-    },
-    diagDate: {
-        fontSize: 13,
-    },
-
-    /* ─── MEDICATION ─── */
+    diagBadgeText: { fontSize: 13, fontWeight: '700' },
+    diagTitle: { fontSize: 18, fontWeight: '700' },
+    diagMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+    diagDate: { fontSize: 13 },
     medCard: {
-        marginHorizontal: 20,
-        borderRadius: 16,
-        marginBottom: 10,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        marginHorizontal: 20, borderRadius: 16, marginBottom: 10, overflow: 'hidden',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
-    medAccent: {
-        height: 3,
-        width: '100%',
-    },
-    medBody: {
-        padding: 14,
-    },
-    medHeaderRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
+    medAccent: { height: 3, width: '100%' },
+    medBody: { padding: 14 },
+    medHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
     medIconWrap: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 10,
+        width: 36, height: 36, borderRadius: 10,
+        alignItems: 'center', justifyContent: 'center', marginRight: 10,
     },
-    medNameBlock: {
-        flex: 1,
-    },
-    medName: {
-        fontSize: 15,
-        fontWeight: '700',
-        lineHeight: 20,
-    },
-    medDose: {
-        fontSize: 13,
-        marginTop: 2,
-    },
-    medSchedule: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginBottom: 8,
-    },
-    timePill: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 8,
-    },
-    timePillText: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    medNotes: {
-        fontSize: 12,
-        fontStyle: 'italic',
-        lineHeight: 18,
-    },
-
-    /* ─── ALLERGIES ─── */
-    allergyCard: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
+    medNameBlock: { flex: 1 },
+    medName: { fontSize: 15, fontWeight: '700', lineHeight: 20 },
+    medDose: { fontSize: 13, marginTop: 2 },
+    medSchedule: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+    timePill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+    timePillText: { fontSize: 13, fontWeight: '700' },
+    medNotes: { fontSize: 12, fontStyle: 'italic', lineHeight: 18 },
+    allergyCard: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     allergyChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 10,
-        borderWidth: 1,
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1,
     },
-    allergyText: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-
-    /* ─── EXPAND ─── */
+    allergyText: { fontSize: 14, fontWeight: '600' },
     expandBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginHorizontal: 20,
-        marginTop: 16,
-        paddingVertical: 14,
-        borderRadius: 14,
-        gap: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        marginHorizontal: 20, marginTop: 16, paddingVertical: 14, borderRadius: 14, gap: 8,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
-    expandBtnText: {
-        fontSize: 15,
-        fontWeight: '600',
-    },
-
-    /* ─── EXPANDED BLOCK ─── */
+    expandBtnText: { fontSize: 15, fontWeight: '600' },
     expandedBlock: {
-        marginHorizontal: 20,
-        marginTop: 10,
-        borderRadius: 16,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        marginHorizontal: 20, marginTop: 10, borderRadius: 16, padding: 16,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
-    subSectionTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-        marginBottom: 10,
-    },
-    conditionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-        gap: 10,
-    },
-    conditionDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-    },
-    conditionText: {
-        fontSize: 14,
-        flex: 1,
-    },
-
-    /* Doctor */
-    doctorRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 14,
-        padding: 12,
-    },
+    subSectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 10 },
+    conditionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 10 },
+    conditionDot: { width: 6, height: 6, borderRadius: 3 },
+    conditionText: { fontSize: 14, flex: 1 },
+    doctorRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 12 },
     doctorAvatar: {
-        width: 42,
-        height: 42,
-        borderRadius: 21,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
     },
-    doctorInfo: {
-        flex: 1,
-        marginLeft: 10,
-    },
-    doctorName: {
-        fontSize: 15,
-        fontWeight: '600',
-    },
-    doctorCenter: {
-        fontSize: 13,
-        marginTop: 2,
-    },
+    doctorInfo: { flex: 1, marginLeft: 10 },
+    doctorName: { fontSize: 15, fontWeight: '600' },
+    doctorCenter: { fontSize: 13, marginTop: 2 },
     doctorCallBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
     },
-
-    /* Visits */
-    visitPair: {
-        flexDirection: 'row',
-        gap: 10,
-    },
-    visitBox: {
-        flex: 1,
-        borderRadius: 14,
-        padding: 12,
-        alignItems: 'center',
-        gap: 4,
-    },
-    visitLabel: {
-        fontSize: 12,
-    },
-    visitDate: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-
-    /* Editable blocks */
-    editableBlock: {
-        marginTop: 20,
-    },
+    visitPair: { flexDirection: 'row', gap: 10 },
+    visitBox: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
+    visitLabel: { fontSize: 12 },
+    visitDate: { fontSize: 14, fontWeight: '600' },
+    editableBlock: { marginTop: 20 },
     editableHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10,
     },
     editPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 8,
-        gap: 4,
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, gap: 4,
     },
-    editPillText: {
-        fontSize: 13,
-        fontWeight: '600',
-    },
+    editPillText: { fontSize: 13, fontWeight: '600' },
     editTextArea: {
-        borderRadius: 12,
-        padding: 12,
-        fontSize: 14,
-        lineHeight: 22,
-        minHeight: 100,
-        borderWidth: 2,
+        borderRadius: 12, padding: 12, fontSize: 14, lineHeight: 22, minHeight: 100, borderWidth: 2,
     },
-    observationText: {
-        fontSize: 14,
-        lineHeight: 22,
-        borderRadius: 12,
-        padding: 12,
-    },
-
-    /* ─── SETTINGS ─── */
-    settingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    settingLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
+    observationText: { fontSize: 14, lineHeight: 22, borderRadius: 12, padding: 12 },
+    settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     settingIconWrap: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
     },
-    settingLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
-    /* ─── CONTACTS ─── */
+    settingLabel: { fontSize: 16, fontWeight: '600' },
     contactRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 20,
-        borderRadius: 14,
-        padding: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, borderRadius: 14, padding: 12,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
     },
     contactAvatar: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',
     },
-    contactInfo: {
-        flex: 1,
-        marginLeft: 12,
-    },
-    contactName: {
-        fontSize: 15,
-        fontWeight: '600',
-    },
-    contactPhone: {
-        fontSize: 13,
-        marginTop: 2,
-    },
+    contactInfo: { flex: 1, marginLeft: 12 },
+    contactName: { fontSize: 15, fontWeight: '600' },
+    contactPhone: { fontSize: 13, marginTop: 2 },
     contactCallBtn: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center',
     },
-    sosText: {
-        fontSize: 12,
-        fontWeight: '800',
-        color: '#fff',
-    },
-
-    /* ─── LOGOUT ─── */
+    sosText: { fontSize: 12, fontWeight: '800', color: '#fff' },
     logoutBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginHorizontal: 20,
-        marginTop: 28,
-        paddingVertical: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        gap: 8,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        marginHorizontal: 20, marginTop: 28, paddingVertical: 16,
+        borderRadius: 14, borderWidth: 1, gap: 8,
     },
-    logoutText: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
-    /* ─── PHOTO PREVIEW ─── */
+    logoutText: { fontSize: 16, fontWeight: '600' },
     previewOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.92)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center',
     },
-    previewClose: {
-        position: 'absolute',
-        top: 50,
-        right: 16,
-        zIndex: 10,
-        padding: 8,
-    },
-    previewImage: {
-        width: SCREEN_W * 0.9,
-        height: SCREEN_W * 0.9,
-        borderRadius: 16,
-    },
+    previewClose: { position: 'absolute', top: 50, right: 16, zIndex: 10, padding: 8 },
+    previewImage: { width: SCREEN_W * 0.9, height: SCREEN_W * 0.9, borderRadius: 16 },
 });
 
 export default PerfilAbueloScreen;
