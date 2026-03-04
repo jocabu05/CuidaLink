@@ -8,6 +8,7 @@
  * Integra: ratingLocalService
  */
 import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
 import ratingLocalService, { DayRating } from '../services/ratingLocalService';

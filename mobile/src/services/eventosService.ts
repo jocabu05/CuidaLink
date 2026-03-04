@@ -13,6 +13,8 @@
  * - getPerfilAbuelo(): datos del perfil del paciente
  */
 import api, { DashboardResponse, EventoInfo, UbicacionAbuelo, PerfilAbuelo } from './api';
+
+interface CheckinData {
     abueloId: number;
     selfieBase64: string;
     lat: number;

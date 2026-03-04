@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 import { notifyNotaLeida } from './taskEventEmitter';
 
+const NOTAS_KEY = '@cuidalink_notas';
+
 export interface Nota {
     id: string;
     texto: string;

@@ -12,11 +12,7 @@
  * ~320 líneas
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-    ActivityIndicator,
-    TouchableOpacity,
-    Animated,
-    Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';

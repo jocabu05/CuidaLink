@@ -7,12 +7,7 @@
  * Integra: tareasService.
  */
 import React, { useState } from 'react';
-    Modal,
-    TouchableOpacity,
-    ScrollView,
-    TextInput,
-    Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
 

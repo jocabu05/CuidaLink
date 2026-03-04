@@ -12,15 +12,7 @@
  * - Soporta modo oscuro
  */
 import React, { useState, useRef, useEffect } from 'react';
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Animated,
-  Keyboard,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Animated, Keyboard, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
@@ -143,12 +135,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             style={[
               styles.logoContainer,
               {
-                backgroundColor: colors.primary,
                 transform: [{ scale: logoScale }],
               },
             ]}
           >
-            <Ionicons name="heart-circle" size={48} color="#FFFFFF" />
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </Animated.View>
 
           <Text style={[styles.appName, { color: colors.primary }]}>
@@ -347,12 +342,16 @@ const styles = StyleSheet.create({
 
   /* logo */
   logoContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 180,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     marginBottom: SPACING.md,
+  },
+  logoImage: {
+    width: 180,
+    height: 180,
   },
   appName: { fontSize: 32, fontWeight: '700', marginBottom: 4 },
   subtitle: { fontSize: 14, marginBottom: SPACING.xl },

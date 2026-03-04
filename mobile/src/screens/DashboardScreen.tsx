@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity, Animated, Image, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS, TYPOGRAPHY, SPACING, SHADOWS, CUIDADORA } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
 import BigButton from '../components/BigButton';
 import eventosService from '../services/eventosService';
 import authService, { User } from '../services/authService';
@@ -128,19 +129,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
     useEffect(() => {
         const reloadTareasAndEvents = async () => {
             try {
-                const tareasStr = await AsyncStorage.getItem('tareas');
-                let updatedTareas = tareasStr ? JSON.parse(tareasStr) as Tarea[] : tareas;
-                try {
-                    const localEventStorage = require('../services/localEventStorage').default;
-                    const eventosHoy = await localEventStorage.getEventosHoy();
-                    const tiposCompletados = new Set(eventosHoy.map((e: any) => e.tipo));
-                    updatedTareas.forEach(t => { t.completada = tiposCompletados.has(t.tipo); });
-                    const completadasCount = updatedTareas.filter(t => t.completada).length;
-                    setPorcentaje(Math.round((completadasCount / updatedTareas.length) * 100));
-                } catch (e) {
-                    console.error('Error leyendo eventos locales:', e);
-                }
-                setTareas(updatedTareas);
+                const localEventStorage = require('../services/localEventStorage').default;
+                const eventosHoy = await localEventStorage.getEventosHoy();
+                const tiposCompletados = new Set(eventosHoy.map((e: any) => e.tipo));
+                setTareas(prev => {
+                    const updated = prev.map(t => ({ ...t, completada: tiposCompletados.has(t.tipo) }));
+                    const completadasCount = updated.filter(t => t.completada).length;
+                    setPorcentaje(Math.round((completadasCount / updated.length) * 100));
+                    return updated;
+                });
             } catch (e) {
                 console.error('Error reloading tareas:', e);
             }
@@ -148,7 +145,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
         const unsubscribe = onTasksChanged(reloadTareasAndEvents);
         const intervalId = setInterval(reloadTareasAndEvents, 2000);
         return () => { unsubscribe(); clearInterval(intervalId); };
-    }, [tareas]);
+    }, []);
 
     const handleTaskPress = useCallback((tarea: Tarea) => {
         const routes: Record<string, () => void> = {
@@ -234,6 +231,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
     const completadas = useMemo(() => tareas.filter(t => t.completada).length, [tareas]);
     const total = tareas.length;
     const nextTask = useMemo(() => tareas.find(t => !t.completada) || null, [tareas]);
+    const nextTaskIndex = useMemo(() => tareas.findIndex(t => !t.completada), [tareas]);
 
     const TASK_BUTTON_CONFIG: Record<string, { title: string; icon: string; variant: 'success' | 'primary' }> = {
         LLEGADA:  { title: 'REGISTRAR LLEGADA',   icon: '🏠', variant: 'success' },
@@ -298,27 +296,49 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
             >
-                <View style={[styles.progressCard, { backgroundColor: colors.primary }]}>
-                    <View style={styles.progressCardTop}>
-                        <View style={styles.progressCardLeft}>
-                            <Text style={styles.progressCardTitle}>📋 Tareas de hoy</Text>
-                            <Text style={styles.progressCardSub}>
-                                {completadas === total
-                                    ? '¡Todo completado! 🎉'
-                                    : `${total - completadas} pendiente${total - completadas !== 1 ? 's' : ''}`}
-                            </Text>
-                        </View>
-                        <View style={styles.progressRing}>
-                            <Text style={styles.progressRingNum}>{completadas}</Text>
-                            <Text style={styles.progressRingDenom}>/{total}</Text>
-                        </View>
+                {/* Stepper horizontal de progreso */}
+                <View style={[styles.stepperContainer, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+                    <View style={styles.stepperRow}>
+                        {tareas.map((t, i) => {
+                            const cfg = TASK_COLORS[t.tipo] || TASK_COLORS.LLEGADA;
+                            const isActive = i === nextTaskIndex;
+                            return (
+                                <React.Fragment key={i}>
+                                    <View style={styles.stepperItem}>
+                                        <View style={[
+                                            styles.stepCircle,
+                                            t.completada
+                                                ? { backgroundColor: '#4CAF50' }
+                                                : isActive
+                                                    ? { backgroundColor: cfg.text, ...SHADOWS.small }
+                                                    : { backgroundColor: isDark ? '#333' : '#E0E0E0' },
+                                        ]}>
+                                            {t.completada
+                                                ? <Ionicons name="checkmark" size={14} color="#fff" />
+                                                : <Text style={{ fontSize: 12 }}>{cfg.emoji}</Text>
+                                            }
+                                        </View>
+                                        <Text style={[
+                                            styles.stepLabel,
+                                            { color: t.completada ? '#4CAF50' : isActive ? cfg.text : colors.textSecondary },
+                                            isActive && { fontWeight: '800' },
+                                        ]}>{t.hora}</Text>
+                                    </View>
+                                    {i < tareas.length - 1 && (
+                                        <View style={[
+                                            styles.stepLine,
+                                            { backgroundColor: t.completada ? '#4CAF50' : (isDark ? '#333' : '#E0E0E0') },
+                                        ]} />
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
                     </View>
-                    <View style={styles.progressBarRow}>
-                        <View style={styles.progressBarBg}>
-                            <View style={[styles.progressBarFill, { width: `${porcentaje}%` as any }]} />
-                        </View>
-                        <Text style={styles.progressPercent}>{porcentaje}%</Text>
-                    </View>
+                    <Text style={[styles.stepperSummary, { color: colors.textSecondary }]}>
+                        {completadas === total
+                            ? '🎉 ¡Todas las tareas completadas!'
+                            : `${completadas}/${total} completadas · ${porcentaje}%`}
+                    </Text>
                 </View>
 
                 {notasPendientes.length > 0 && (
@@ -425,41 +445,77 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
                 {tareas.map((tarea, index) => {
                     const config = TASK_COLORS[tarea.tipo] || TASK_COLORS.LLEGADA;
                     const isLast = index === tareas.length - 1;
+                    const isNext = index === nextTaskIndex;
                     return (
                         <TouchableOpacity
                             key={index}
                             style={[
                                 styles.taskCard,
                                 { borderLeftColor: config.text, backgroundColor: colors.surface },
-                                tarea.completada && { backgroundColor: isDark ? colors.surfaceElevated : '#F8FBF8', borderLeftColor: isDark ? '#555' : '#B0BEC5' },
+                                tarea.completada && {
+                                    backgroundColor: isDark ? '#1a2e1a' : '#F0FAF0',
+                                    borderLeftColor: '#4CAF50',
+                                    opacity: 0.75,
+                                },
+                                isNext && {
+                                    borderLeftColor: config.text,
+                                    borderLeftWidth: 5,
+                                    backgroundColor: isDark ? `${config.text}15` : `${config.text}08`,
+                                    ...SHADOWS.medium,
+                                },
                             ]}
                             onPress={() => handleTaskPress(tarea)}
                             activeOpacity={0.7}
                         >
                             <View style={styles.taskLeftCol}>
-                                <View style={[styles.taskIconCircle, { backgroundColor: isDark ? config.darkBg : config.bg }]}>
-                                    <Text style={styles.taskEmoji}>{config.emoji}</Text>
-                                </View>
-                                {!isLast && <View style={[styles.taskTimeline, { backgroundColor: colors.border }]} />}
+                                {tarea.completada ? (
+                                    <View style={[styles.taskIconCircle, { backgroundColor: isDark ? '#1B3A1E' : '#E8F5E9' }]}>
+                                        <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+                                    </View>
+                                ) : (
+                                    <View style={[styles.taskIconCircle, { backgroundColor: isDark ? config.darkBg : config.bg }, isNext && styles.nextTaskIcon]}>
+                                        <Text style={styles.taskEmoji}>{config.emoji}</Text>
+                                    </View>
+                                )}
+                                {!isLast && (
+                                    <View style={[
+                                        styles.taskTimeline,
+                                        { backgroundColor: tarea.completada ? '#4CAF50' : colors.border },
+                                        tarea.completada && { opacity: 0.5 },
+                                    ]} />
+                                )}
                             </View>
                             <View style={styles.taskInfo}>
                                 <View style={styles.taskTopRow}>
                                     <Text style={[
                                         styles.taskDescription,
                                         { color: colors.text },
-                                        tarea.completada && { textDecorationLine: 'line-through' as const, color: isDark ? '#777' : '#B0BEC5' },
+                                        tarea.completada && { textDecorationLine: 'line-through' as const, color: isDark ? '#666' : '#9E9E9E' },
                                     ]} numberOfLines={1}>{tarea.descripcion}</Text>
-                                    <View style={[styles.taskHoraBadge, { backgroundColor: isDark ? `${config.text}20` : `${config.text}12` }]}>
-                                        <Text style={[styles.taskHora, { color: config.text }]}>{tarea.hora}</Text>
+                                    <View style={[styles.taskHoraBadge, {
+                                        backgroundColor: tarea.completada
+                                            ? (isDark ? '#1B3A1E' : '#E8F5E9')
+                                            : (isDark ? `${config.text}20` : `${config.text}12`),
+                                    }]}>
+                                        <Text style={[styles.taskHora, {
+                                            color: tarea.completada ? '#4CAF50' : config.text,
+                                        }]}>{tarea.hora}</Text>
                                     </View>
                                 </View>
                                 <View style={styles.taskMeta}>
-                                    <View style={[styles.taskTypeBadge, { backgroundColor: config.bg }]}>
-                                        <Text style={[styles.taskTypeText, { color: config.text }]}>{config.label}</Text>
-                                    </View>
-                                    {tarea.completada && (
+                                    {tarea.completada ? (
                                         <View style={styles.checkBadge}>
-                                            <Text style={styles.checkText}>✓ Hecho</Text>
+                                            <Ionicons name="checkmark-done" size={14} color="#4CAF50" />
+                                            <Text style={styles.checkText}>Completada</Text>
+                                        </View>
+                                    ) : isNext ? (
+                                        <View style={[styles.nextBadge, { backgroundColor: `${config.text}18` }]}>
+                                            <Ionicons name="arrow-forward-circle" size={14} color={config.text} />
+                                            <Text style={[styles.nextBadgeText, { color: config.text }]}>Siguiente</Text>
+                                        </View>
+                                    ) : (
+                                        <View style={[styles.taskTypeBadge, { backgroundColor: config.bg }]}>
+                                            <Text style={[styles.taskTypeText, { color: config.text }]}>{config.label}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -469,19 +525,52 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout 
                 })}
             </ScrollView>
 
-            <View style={[styles.bottomActions, { backgroundColor: colors.surface }]}>
+            <View style={[styles.bottomActions, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
                 {nextTask ? (
-                    <BigButton
-                        title={`${TASK_BUTTON_CONFIG[nextTask.tipo]?.icon || '▶️'}  ${TASK_BUTTON_CONFIG[nextTask.tipo]?.title || nextTask.descripcion}`}
-                        variant={TASK_BUTTON_CONFIG[nextTask.tipo]?.variant || 'success'}
-                        onPress={() => handleTaskPress(nextTask)}
-                    />
+                    <View>
+                        <View style={styles.bottomStepRow}>
+                            <Text style={[styles.bottomStepLabel, { color: colors.textSecondary }]}>
+                                Paso {nextTaskIndex + 1} de {total}
+                            </Text>
+                            <View style={styles.bottomDots}>
+                                {tareas.map((t, i) => (
+                                    <View key={i} style={[
+                                        styles.bottomDot,
+                                        { backgroundColor: t.completada ? '#4CAF50' : i === nextTaskIndex ? colors.primary : colors.border },
+                                        i === nextTaskIndex && styles.bottomDotActive,
+                                    ]} />
+                                ))}
+                            </View>
+                        </View>
+                        <TouchableOpacity
+                            style={[
+                                styles.nextActionBtn,
+                                { backgroundColor: TASK_COLORS[nextTask.tipo]?.text || colors.primary },
+                            ]}
+                            onPress={() => handleTaskPress(nextTask)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.nextActionEmoji}>{TASK_BUTTON_CONFIG[nextTask.tipo]?.icon || '▶️'}</Text>
+                            <View style={styles.nextActionTextCol}>
+                                <Text style={styles.nextActionTitle}>{TASK_BUTTON_CONFIG[nextTask.tipo]?.title || nextTask.descripcion}</Text>
+                                <Text style={styles.nextActionSub}>{nextTask.hora} · {nextTask.descripcion}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={24} color="rgba(255,255,255,0.7)" />
+                        </TouchableOpacity>
+                    </View>
                 ) : (
-                    <BigButton
-                        title="✅  JORNADA COMPLETADA"
-                        variant="success"
+                    <TouchableOpacity
+                        style={[styles.nextActionBtn, { backgroundColor: '#4CAF50' }]}
                         onPress={() => Alert.alert('🎉 ¡Enhorabuena!', 'Has completado todas las tareas de hoy.')}
-                    />
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.nextActionEmoji}>🎉</Text>
+                        <View style={styles.nextActionTextCol}>
+                            <Text style={styles.nextActionTitle}>JORNADA COMPLETADA</Text>
+                            <Text style={styles.nextActionSub}>Todas las tareas de hoy están hechas</Text>
+                        </View>
+                        <Ionicons name="checkmark-circle" size={24} color="rgba(255,255,255,0.7)" />
+                    </TouchableOpacity>
                 )}
             </View>
 
@@ -534,28 +623,19 @@ const styles = StyleSheet.create({
     careInfoEmoji: { fontSize: 18, marginRight: 8 },
     careInfoText: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.9)' },
     tasksList: { flex: 1, paddingHorizontal: SPACING.lg, paddingTop: SPACING.md },
-    progressCard: {
-        borderRadius: 20, paddingHorizontal: 20, paddingVertical: 18, marginBottom: 16, ...SHADOWS.medium,
+    stepperContainer: {
+        borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 14, ...SHADOWS.small,
     },
-    progressCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    progressCardLeft: { flex: 1 },
-    progressCardTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.3 },
-    progressCardSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4, fontWeight: '500' },
-    progressRing: {
-        width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.2)',
-        borderWidth: 3, borderColor: 'rgba(255,255,255,0.6)',
-        alignItems: 'center', justifyContent: 'center', flexDirection: 'row',
+    stepperRow: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     },
-    progressRingNum: { fontSize: 22, fontWeight: '900', color: '#FFFFFF' },
-    progressRingDenom: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
-    progressBarRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14 },
-    progressBarBg: {
-        flex: 1, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden',
+    stepperItem: { alignItems: 'center' },
+    stepCircle: {
+        width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center',
     },
-    progressBarFill: { height: '100%' as any, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.85)' },
-    progressPercent: {
-        fontSize: 13, fontWeight: '800', color: 'rgba(255,255,255,0.9)', marginLeft: 10, minWidth: 36, textAlign: 'right',
-    },
+    stepLabel: { fontSize: 10, fontWeight: '600', marginTop: 4 },
+    stepLine: { height: 2, flex: 1, marginHorizontal: 2, borderRadius: 1, marginBottom: 14 },
+    stepperSummary: { fontSize: 12, fontWeight: '600', textAlign: 'center', marginTop: 8 },
     taskCard: {
         flexDirection: 'row', alignItems: 'flex-start', borderRadius: 18,
         padding: 14, marginBottom: 10, borderLeftWidth: 4, ...SHADOWS.small,
@@ -572,11 +652,37 @@ const styles = StyleSheet.create({
     taskTypeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
     taskHoraBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
     taskHora: { fontSize: 13, fontWeight: '800' },
-    checkBadge: { backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-    checkText: { fontSize: 11, fontWeight: '700', color: '#2E7D32' },
+    checkBadge: {
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
+    },
+    checkText: { fontSize: 11, fontWeight: '700', color: '#4CAF50' },
+    nextTaskIcon: {
+        borderWidth: 2, borderColor: 'rgba(0,0,0,0.08)',
+    },
+    nextBadge: {
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
+    },
+    nextBadgeText: { fontSize: 11, fontWeight: '800' },
     bottomActions: {
         padding: SPACING.lg, paddingBottom: 14, borderTopLeftRadius: 24, borderTopRightRadius: 24, ...SHADOWS.large,
     },
+    bottomStepRow: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, paddingHorizontal: 2,
+    },
+    bottomStepLabel: { fontSize: 13, fontWeight: '700' },
+    bottomDots: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+    bottomDot: { width: 8, height: 8, borderRadius: 4 },
+    bottomDotActive: { width: 20, borderRadius: 10 },
+    nextActionBtn: {
+        flexDirection: 'row', alignItems: 'center', borderRadius: 18,
+        paddingVertical: 16, paddingHorizontal: 18, ...SHADOWS.medium,
+    },
+    nextActionEmoji: { fontSize: 28, marginRight: 14 },
+    nextActionTextCol: { flex: 1 },
+    nextActionTitle: { fontSize: 16, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.3 },
+    nextActionSub: { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '500' },
     notasSection: { marginBottom: SPACING.md },
     notasSectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
     notasSectionTitle: { fontSize: 15, fontWeight: '700' },

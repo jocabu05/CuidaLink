@@ -6,10 +6,7 @@
  * Soporta modo oscuro vía ThemeContext.
  */
 import React from 'react';
-    ViewStyle,
-    TextStyle,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
 import { TYPOGRAPHY, BUTTON_HEIGHT, SHADOWS } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
 

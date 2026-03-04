@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fondo circular -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0EA5E9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F43F5E;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fondo circular base -->
+  <circle cx="256" cy="256" r="256" fill="url(#bgGradient)"/>
+  
+  <!-- Círculos de conexión decorativos (conexión digital) -->
+  <circle cx="120" cy="140" r="35" fill="none" stroke="#38BDF8" stroke-width="2" opacity="0.6"/>
+  <circle cx="392" cy="140" r="35" fill="none" stroke="#38BDF8" stroke-width="2" opacity="0.6"/>
+  <circle cx="256" cy="380" r="35" fill="none" stroke="#38BDF8" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Líneas de conexión -->
+  <line x1="150" y1="165" x2="220" y2="220" stroke="#38BDF8" stroke-width="2" opacity="0.5"/>
+  <line x1="362" y1="165" x2="290" y2="220" stroke="#38BDF8" stroke-width="2" opacity="0.5"/>
+  <line x1="245" y1="290" x2="180" y2="360" stroke="#38BDF8" stroke-width="2" opacity="0.5"/>
+  <line x1="267" y1="290" x2="330" y2="360" stroke="#38BDF8" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Nodo central izquierdo -->
+  <circle cx="120" cy="140" r="12" fill="#38BDF8"/>
+  
+  <!-- Nodo central derecho -->
+  <circle cx="392" cy="140" r="12" fill="#38BDF8"/>
+  
+  <!-- Nodo central abajo -->
+  <circle cx="256" cy="380" r="12" fill="#38BDF8"/>
+  
+  <!-- CORAZÓN principal (centro) -->
+  <g filter="url(#glow)">
+    <!-- Corazón SVG path -->
+    <path d="M 256 310 
+             C 220 280, 180 260, 160 240
+             C 140 220, 130 200, 130 180
+             C 130 150, 150 130, 175 130
+             C 200 130, 220 150, 235 170
+             C 250 155, 270 130, 295 130
+             C 320 130, 340 150, 340 180
+             C 340 200, 330 220, 310 240
+             C 290 260, 250 280, 256 310 Z" 
+          fill="url(#heartGradient)" stroke="white" stroke-width="3"/>
+  </g>
+  
+  <!-- Puntos pequeños en las esquinas (para balance) -->
+  <circle cx="100" cy="320" r="8" fill="#38BDF8" opacity="0.7"/>
+  <circle cx="412" cy="320" r="8" fill="#38BDF8" opacity="0.7"/>
+  
+  <!-- TEXTO: CuidaLink -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="42" font-weight="bold" 
+        text-anchor="middle" fill="white" letter-spacing="2">
+    CuidaLink
+  </text>
+  
+  <!-- Subtítulo decorativo -->
+  <text x="256" y="480" font-family="Arial, sans-serif" font-size="14" 
+        text-anchor="middle" fill="#E0F2FE" letter-spacing="1" opacity="0.9">
+    Care With Connection
+  </text>
+</svg>

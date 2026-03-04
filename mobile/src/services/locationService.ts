@@ -12,6 +12,8 @@
  * Usa expo-location para acceso al GPS del dispositivo.
  */
 import * as Location from 'expo-location';
+
+export interface LocationData {
     lat: number;
     lng: number;
     accuracy?: number;

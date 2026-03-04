@@ -7,7 +7,7 @@
  * Soporta modo oscuro vía ThemeContext.
  */
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Image } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 interface SplashScreenProps {
@@ -27,22 +27,30 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 
         const timer = setTimeout(() => {
             Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => onFinish());
-        }, 1500);
+        }, 2000);
 
         return () => clearTimeout(timer);
     }, []);
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.headerBg }]}>
+        <View style={[styles.container, { backgroundColor: '#F8F9FA' }]}>
             <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-                <View style={[styles.logoContainer, { backgroundColor: colors.card }]}>
-                    <Text style={styles.logoIcon}>🤲</Text>
-                    <View style={[styles.heartBadge, { backgroundColor: colors.card, borderColor: colors.headerBg }]}>
-                        <Text style={styles.heartIcon}>💚</Text>
-                    </View>
+                {/* Logo principal */}
+                <View style={styles.logoWrapper}>
+                    <Image
+                        source={require('../../assets/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </View>
-                <Text style={styles.appName}>CuidaLink</Text>
-                <Text style={styles.tagline}>Cuidando con confianza</Text>
+                
+                {/* Nombre de la app */}
+                <Text style={styles.appName}>CUIDALINK</Text>
+                
+                {/* Subtítulo */}
+                <Text style={styles.tagline}>Apoyo y Cuidado para el Alzheimer</Text>
+                
+                {/* Loading dots */}
                 <View style={styles.loadingContainer}>
                     <LoadingDots />
                 </View>
@@ -86,24 +94,56 @@ const LoadingDots: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    content: { alignItems: 'center' },
-    logoContainer: {
-        width: 140, height: 140, borderRadius: 70,
-        alignItems: 'center', justifyContent: 'center', marginBottom: 24,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 10,
+    container: { 
+        flex: 1, 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#F8F9FA'
     },
-    logoIcon: { fontSize: 64 },
-    heartBadge: {
-        position: 'absolute', bottom: 0, right: 0, width: 44, height: 44, borderRadius: 22,
-        alignItems: 'center', justifyContent: 'center', borderWidth: 3,
+    content: { 
+        alignItems: 'center',
+        paddingHorizontal: 24
     },
-    heartIcon: { fontSize: 24 },
-    appName: { fontSize: 42, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 1 },
-    tagline: { fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 8, fontStyle: 'italic' },
-    loadingContainer: { marginTop: 48 },
-    dotsContainer: { flexDirection: 'row', gap: 8 },
-    dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFFFFF' },
+    logoWrapper: {
+        width: 280,
+        height: 280,
+        marginBottom: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+    },
+    logo: {
+        width: 280,
+        height: 280,
+    },
+    appName: { 
+        fontSize: 44, 
+        fontWeight: '700', 
+        color: '#2E8BA6',
+        letterSpacing: 3,
+        marginBottom: 8,
+        textAlign: 'center'
+    },
+    tagline: { 
+        fontSize: 16, 
+        color: '#666666', 
+        marginBottom: 48,
+        fontStyle: 'italic',
+        textAlign: 'center'
+    },
+    loadingContainer: { 
+        marginTop: 16 
+    },
+    dotsContainer: { 
+        flexDirection: 'row', 
+        gap: 8 
+    },
+    dot: { 
+        width: 12, 
+        height: 12, 
+        borderRadius: 6, 
+        backgroundColor: '#4DB5D9' 
+    },
 });
 
 export default SplashScreen;

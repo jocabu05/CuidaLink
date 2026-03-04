@@ -10,7 +10,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import {
-    View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions,
+    View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Image,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
@@ -50,13 +50,14 @@ const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({ onSelectRole 
             {/* Header */}
             <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
                 <View style={styles.logoContainer}>
-                    <View style={[styles.logo, { backgroundColor: colors.pillBg }]}>
-                        <Text style={styles.logoEmoji}>💚</Text>
-                    </View>
-                    <View style={[styles.logoPulse, { borderColor: colors.success + '30' }]} />
+                    <Image
+                        source={require('../../assets/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </View>
-                <Text style={[styles.appName, { color: colors.text }]}>CuidaLink</Text>
-                <Text style={[styles.tagline, { color: colors.textSecondary }]}>Cuidado inteligente, tranquilidad real</Text>
+                <Text style={[styles.appName, { color: colors.text }]}>CUIDALINK</Text>
+                <Text style={[styles.tagline, { color: colors.textSecondary }]}>Apoyo y Cuidado para el Alzheimer</Text>
                 <View style={[styles.divider, { backgroundColor: colors.primary }]} />
                 <Text style={[styles.subtitle, { color: colors.text }]}>¿Cómo quieres acceder?</Text>
             </Animated.View>
@@ -120,10 +121,9 @@ const styles = StyleSheet.create({
     container: { flex: 1, paddingHorizontal: SPACING.lg, overflow: 'hidden' },
     circle1: { position: 'absolute', top: -80, right: -60, width: 200, height: 200, borderRadius: 100 },
     circle2: { position: 'absolute', bottom: -40, left: -80, width: 260, height: 260, borderRadius: 130 },
-    header: { alignItems: 'center', paddingTop: 80, marginBottom: SPACING.xl },
-    logoContainer: { position: 'relative', marginBottom: SPACING.md },
-    logo: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', ...SHADOWS.medium },
-    logoPulse: { position: 'absolute', top: -4, left: -4, width: 96, height: 96, borderRadius: 48, borderWidth: 2 },
+    header: { alignItems: 'center', paddingTop: 60, marginBottom: SPACING.xl },
+    logoContainer: { position: 'relative', marginBottom: SPACING.md, width: 220, height: 220, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
+    logo: { width: 220, height: 220 },
     logoEmoji: { fontSize: 40 },
     appName: { fontSize: 36, fontWeight: '800', letterSpacing: -0.5 },
     tagline: { fontSize: 15, marginTop: 6, fontWeight: '500' },

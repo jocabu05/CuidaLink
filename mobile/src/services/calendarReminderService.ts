@@ -31,6 +31,7 @@ export interface CalendarEventReminder {
  *   2) El mismo día, 1h antes    → "Hoy a las HH:mm: ..."
  */
 class CalendarReminderService {
+    private readonly CALENDAR_REMINDERS_KEY = '@calendar_reminders';
 
     /** Request permissions (idempotent) */
     async init(): Promise<boolean> {
@@ -125,7 +126,7 @@ class CalendarReminderService {
             notifDayBeforeId,
             notifSameDayId,
         });
-        await AsyncStorage.setItem(CALENDAR_REMINDERS_KEY, JSON.stringify(stored));
+        await AsyncStorage.setItem(this.CALENDAR_REMINDERS_KEY, JSON.stringify(stored));
     }
 
     /** Cancel both reminders for an event */
@@ -140,7 +141,7 @@ class CalendarReminderService {
                 await Notifications.cancelScheduledNotificationAsync(existing.notifSameDayId).catch(() => {});
             }
             const filtered = stored.filter(r => r.eventId !== eventId);
-            await AsyncStorage.setItem(CALENDAR_REMINDERS_KEY, JSON.stringify(filtered));
+            await AsyncStorage.setItem(this.CALENDAR_REMINDERS_KEY, JSON.stringify(filtered));
         }
     }
 
@@ -164,7 +165,7 @@ class CalendarReminderService {
                 await Notifications.cancelScheduledNotificationAsync(r.notifSameDayId).catch(() => {});
             }
         }
-        await AsyncStorage.removeItem(CALENDAR_REMINDERS_KEY);
+        await AsyncStorage.removeItem(this.CALENDAR_REMINDERS_KEY);
 
         // Only schedule for future events
         const now = new Date();
@@ -180,7 +181,7 @@ class CalendarReminderService {
     /** Get all stored reminder mappings */
     async getStoredReminders(): Promise<CalendarEventReminder[]> {
         try {
-            const data = await AsyncStorage.getItem(CALENDAR_REMINDERS_KEY);
+            const data = await AsyncStorage.getItem(this.CALENDAR_REMINDERS_KEY);
             return data ? JSON.parse(data) : [];
         } catch {
             return [];

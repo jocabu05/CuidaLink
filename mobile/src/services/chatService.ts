@@ -15,6 +15,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 
+const CHAT_KEY = '@cuidalink_chat_messages';
+
 export interface ChatMessage {
     id: string;
     from: 'cuidadora' | 'familiar';

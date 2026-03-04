@@ -9,15 +9,7 @@
  * Soporta modo oscuro.
  */
 import React, { useState, useRef, useEffect } from 'react';
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Animated,
-  Keyboard,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Animated, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';

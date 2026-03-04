@@ -13,6 +13,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 
+const EVENTS_KEY = '@cuidalink_local_events';
+const SYNC_QUEUE_KEY = '@cuidalink_sync_queue';
+
 export interface LocalEvento {
     id: string;
     tipo: string;

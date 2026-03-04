@@ -12,12 +12,7 @@
  * ~509 líneas
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-    TouchableOpacity,
-    Alert,
-    ActivityIndicator,
-    Animated,
-    Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Animated, Dimensions } from 'react-native';
 import MapView, { Polyline, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';

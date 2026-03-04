@@ -11,6 +11,8 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { LoginResponse } from './api';
+
+export interface User {
     id: number;
     nombre: string;
     telefono: string;
