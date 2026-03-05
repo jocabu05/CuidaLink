@@ -44,3 +44,11 @@ backend/*.log
 
 # Word temp files
 ~$*
+
+# Scripts de generación de documentos
+generate_*.py
+
+# Documentos generados
+*.docx
+*.pdf
+ARQUITECTURA_CUIDALINK.md
