@@ -9,11 +9,14 @@
  * Soporta modo oscuro.
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Animated, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Animated, Keyboard, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
 import api from '../services/api';
+
+const REGISTERED_USERS_KEY = '@cuidalink_registered_familiares';
 
 /* ───────── types ───────── */
 interface FamiliarLoginScreenProps {
@@ -84,15 +87,28 @@ export default function FamiliarLoginScreen({
       await api.post('/auth/familiar/login', { email, password });
       onLoginSuccess();
     } catch {
+      // Backend no disponible — comprobar credenciales demo y usuarios registrados localmente
       if (
-        email === DEMO_FAMILIAR.email &&
+        email.trim().toLowerCase() === DEMO_FAMILIAR.email &&
         password === DEMO_FAMILIAR.password
       ) {
         onLoginSuccess();
       } else {
-        setError(
-          'Email o contraseña incorrectos. Prueba con familiar@demo.com / 1234',
-        );
+        // Buscar en usuarios registrados localmente
+        try {
+          const raw = await AsyncStorage.getItem(REGISTERED_USERS_KEY);
+          const users: { email: string; password: string; nombre: string }[] = raw ? JSON.parse(raw) : [];
+          const match = users.find(
+            (u) => u.email === email.trim().toLowerCase() && u.password === password,
+          );
+          if (match) {
+            onLoginSuccess();
+          } else {
+            setError('Email o contraseña incorrectos');
+          }
+        } catch {
+          setError('Email o contraseña incorrectos');
+        }
       }
     } finally {
       setLoading(false);
@@ -136,12 +152,15 @@ export default function FamiliarLoginScreen({
             style={[
               styles.logoContainer,
               {
-                backgroundColor: colors.primary,
                 transform: [{ scale: logoScale }],
               },
             ]}
           >
-            <Ionicons name="people" size={48} color="#FFFFFF" />
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </Animated.View>
 
           <Text style={[styles.appName, { color: colors.primary }]}>
@@ -373,7 +392,7 @@ const styles = StyleSheet.create({
   /* back */
   backButton: {
     position: 'absolute',
-    top: SPACING.md,
+    top: 48,
     left: 0,
     width: 42,
     height: 42,
@@ -384,12 +403,16 @@ const styles = StyleSheet.create({
 
   /* logo */
   logoContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 180,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     marginBottom: SPACING.md,
+  },
+  logoImage: {
+    width: 180,
+    height: 180,
   },
   appName: { fontSize: 32, fontWeight: '700', marginBottom: 4 },
   subtitle: { fontSize: 14, marginBottom: SPACING.xl },

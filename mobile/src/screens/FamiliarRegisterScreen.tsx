@@ -4,9 +4,12 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Animated, Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { SPACING, SHADOWS } from '../styles/theme';
 import api from '../services/api';
+
+const REGISTERED_USERS_KEY = '@cuidalink_registered_familiares';
 
 interface FamiliarRegisterScreenProps {
   onRegisterSuccess: () => void;
@@ -78,12 +81,25 @@ export default function FamiliarRegisterScreen({ onRegisterSuccess, onGoBack }: 
     Keyboard.dismiss();
     try {
       await api.post('/auth/familiar/register', { nombre, email, telefono, parentesco, codigoInvitacion, password });
-      onRegisterSuccess();
     } catch {
-      onRegisterSuccess();
-    } finally {
-      setLoading(false);
+      // Backend no disponible — guardar usuario localmente para login offline
     }
+    // Siempre guardar en local para que el login funcione sin backend
+    try {
+      const raw = await AsyncStorage.getItem(REGISTERED_USERS_KEY);
+      const users: { email: string; password: string; nombre: string }[] = raw ? JSON.parse(raw) : [];
+      const existing = users.findIndex((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+      if (existing >= 0) {
+        users[existing] = { email: email.trim().toLowerCase(), password, nombre };
+      } else {
+        users.push({ email: email.trim().toLowerCase(), password, nombre });
+      }
+      await AsyncStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(users));
+    } catch (e) {
+      console.warn('Error guardando usuario local:', e);
+    }
+    setLoading(false);
+    onRegisterSuccess();
   };
 
   const strength = getPasswordStrength(password);
@@ -201,14 +217,15 @@ export default function FamiliarRegisterScreen({ onRegisterSuccess, onGoBack }: 
         <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} />
         <TextInput style={[styles.input, { color: colors.text }]} value={password}
           onChangeText={(t) => { setPassword(t); setError(''); }} placeholder="Mínimo 4 caracteres"
-          placeholderTextColor={colors.textLight} secureTextEntry={!showPassword} />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          placeholderTextColor={colors.textLight} secureTextEntry={!showPassword}
+          autoComplete="off" autoCorrect={false} />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       {password.length > 0 && (
-        <View style={styles.strengthRow}>
+        <View style={styles.strengthRow} pointerEvents="none">
           <View style={styles.strengthTrack}>
             {[1, 2, 3].map((lvl) => (
               <View key={lvl} style={[styles.strengthSegment, {
@@ -223,16 +240,25 @@ export default function FamiliarRegisterScreen({ onRegisterSuccess, onGoBack }: 
       <Text style={[styles.label, { color: colors.textSecondary }]}>Confirmar contraseña</Text>
       <View style={inputRowStyle}>
         <Ionicons name="lock-open-outline" size={20} color={colors.textSecondary} />
-        <TextInput style={[styles.input, { color: colors.text }]} value={confirmPassword}
-          onChangeText={(t) => { setConfirmPassword(t); setError(''); }} placeholder="Repite la contraseña"
-          placeholderTextColor={colors.textLight} secureTextEntry={!showConfirm} />
-        <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)}>
+        <TextInput
+          key="confirmPassword"
+          style={[styles.input, { color: colors.text }]}
+          value={confirmPassword}
+          onChangeText={(t) => { setConfirmPassword(t); setError(''); }}
+          placeholder="Repite la contraseña"
+          placeholderTextColor={colors.textLight}
+          secureTextEntry={!showConfirm}
+          autoComplete="off"
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name={showConfirm ? 'eye-off' : 'eye'} size={22} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       {confirmPassword.length > 0 && (
-        <View style={styles.matchRow}>
+        <View style={styles.matchRow} pointerEvents="none">
           <Ionicons name={passwordsMatch ? 'checkmark-circle' : 'close-circle'} size={18}
             color={passwordsMatch ? colors.success : colors.danger} />
           <Text style={{ color: passwordsMatch ? colors.success : colors.danger, fontSize: 13, fontWeight: '500', marginLeft: 6 }}>
@@ -272,7 +298,7 @@ export default function FamiliarRegisterScreen({ onRegisterSuccess, onGoBack }: 
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.circle1, { backgroundColor: colors.primary + '15' }]} />
       <View style={[styles.circle2, { backgroundColor: colors.primary + '10' }]} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }, SHADOWS.small]} onPress={onGoBack}>
             <Ionicons name="arrow-back" size={22} color={colors.primary} />
@@ -356,7 +382,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1,
     paddingHorizontal: SPACING.md, height: 52, marginBottom: SPACING.md, gap: 10,
   },
-  input: { flex: 1, fontSize: 16 },
+  input: { flex: 1, fontSize: 16, height: '100%', padding: 0 },
   countryCode: { fontSize: 15, fontWeight: '500' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: SPACING.md },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
@@ -370,14 +396,14 @@ const styles = StyleSheet.create({
   summaryDetail: { fontSize: 12, marginTop: 2 },
   strengthRow: {
     flexDirection: 'row', alignItems: 'center',
-    marginBottom: SPACING.md, gap: 10, marginTop: -4,
+    marginBottom: SPACING.sm, gap: 10,
   },
   strengthTrack: { flex: 1, flexDirection: 'row', gap: 4 },
   strengthSegment: { flex: 1, height: 5, borderRadius: 3 },
   strengthLabel: { fontSize: 12, fontWeight: '600', minWidth: 40 },
   matchRow: {
     flexDirection: 'row', alignItems: 'center',
-    marginTop: -6, marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   termsText: { fontSize: 12, textAlign: 'center', marginBottom: SPACING.md, lineHeight: 18 },
   errorContainer: {

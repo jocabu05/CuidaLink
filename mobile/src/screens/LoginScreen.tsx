@@ -21,6 +21,7 @@ import authService from '../services/authService';
 /* ───────── types ───────── */
 interface LoginScreenProps {
   onLoginSuccess: () => void;
+  onGoBack?: () => void;
 }
 
 const DEMO_USERS = [
@@ -28,7 +29,7 @@ const DEMO_USERS = [
 ];
 
 /* ═══════════════════════════════════════════ */
-export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+export default function LoginScreen({ onLoginSuccess, onGoBack }: LoginScreenProps) {
   const { colors } = useTheme();
 
   /* state */
@@ -130,6 +131,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* ── back ── */}
+          {onGoBack && (
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: colors.card }, SHADOWS.small]}
+              onPress={onGoBack}
+            >
+              <Ionicons name="arrow-back" size={22} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+
           {/* ── logo ── */}
           <Animated.View
             style={[
@@ -338,6 +349,20 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
+  },
+
+  /* back */
+  backButton: {
+    position: 'absolute',
+    top: 48,
+    left: 0,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: SPACING.sm,
   },
 
   /* logo */

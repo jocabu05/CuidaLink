@@ -412,7 +412,7 @@ function AppContent() {
           <NavigationContainer theme={navTheme}>
             <RootStack.Navigator screenOptions={{ headerShown: false }}>
               <RootStack.Screen name="Login">
-                {() => <LoginScreen onLoginSuccess={handleLoginSuccess} />}
+                {() => <LoginScreen onLoginSuccess={handleLoginSuccess} onGoBack={handleGoBack} />}
               </RootStack.Screen>
             </RootStack.Navigator>
           </NavigationContainer>
